@@ -30,7 +30,9 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
             stmt = connection.prepareStatement(query);
         }
         for (Map.Entry<Integer,Object> entry : parameters.entrySet()) {
-            if (entry.getValue() instanceof Integer) {
+            if (entry.getValue() == null) {
+                stmt.setNull(entry.getKey(), Types.NULL);
+            } else if (entry.getValue() instanceof Integer) {
                 stmt.setInt(entry.getKey(), (Integer) entry.getValue());
             } else if (entry.getValue() instanceof Float) {
                 stmt.setFloat(entry.getKey(), (Float) entry.getValue());
