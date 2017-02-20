@@ -71,7 +71,7 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
             while (resultSet.next()) {
                 Map<String, SQLResultField<BufferedSQLResultColumn>> rowFields = new HashMap<>();
                 for (int i = 0; i < metaData.getColumnCount(); i++) {
-                    Object value = resultSet.getObject(i);
+                    Object value = resultSet.getObject(i + 1);
                     if (resultSet.wasNull()) {
                         value = null;
                     }
