@@ -71,19 +71,20 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
             while (resultSet.next()) {
                 Map<String, SQLResultField<BufferedSQLResultColumn>> rowFields = new HashMap<>();
                 for (int i = 0; i < metaData.getColumnCount(); i++) {
-                    Object value = resultSet.getObject(i + 1);
+                    int columnIndex = i + 1;
+                    Object value = resultSet.getObject(columnIndex);
                     if (resultSet.wasNull()) {
                         value = null;
                     }
                     BufferedResultField field = new BufferedResultField(
-                        metaData.getColumnLabel(i),
+                        metaData.getColumnLabel(columnIndex),
                         value
                     );
-                    rowFields.put(metaData.getColumnLabel(i), field);
-                    if (!columnFields.containsKey(metaData.getColumnLabel(i))) {
-                        columnFields.put(metaData.getColumnLabel(i), new ArrayList<>());
+                    rowFields.put(metaData.getColumnLabel(columnIndex), field);
+                    if (!columnFields.containsKey(metaData.getColumnLabel(columnIndex))) {
+                        columnFields.put(metaData.getColumnLabel(columnIndex), new ArrayList<>());
                     }
-                    columnFields.get(metaData.getColumnLabel(i)).add(field);
+                    columnFields.get(metaData.getColumnLabel(columnIndex)).add(field);
                 }
                 rows.add(new BufferedResultRow(rowFields));
             }
