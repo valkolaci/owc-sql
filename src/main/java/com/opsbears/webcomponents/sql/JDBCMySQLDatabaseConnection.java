@@ -2,6 +2,8 @@ package com.opsbears.webcomponents.sql;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,6 +44,8 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
                 stmt.setString(entry.getKey(), (String) entry.getValue());
             } else if (entry.getValue() instanceof Boolean) {
                 stmt.setBoolean(entry.getKey(), (Boolean) entry.getValue());
+            } else if (entry.getValue() instanceof BigDecimal) {
+                stmt.setBigDecimal(entry.getKey(), (BigDecimal) entry.getValue());
             } else {
                 stmt.setString(entry.getKey(), entry.getValue().toString());
             }
@@ -64,7 +68,7 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
             Map<String, List<BufferedResultField>> columnFields = new HashMap<>();
             ResultSetMetaData metaData = resultSet.getMetaData();
 
-            do {
+            while (resultSet.next()) {
                 Map<String, SQLResultField<BufferedSQLResultColumn>> rowFields = new HashMap<>();
                 for (int i = 0; i < metaData.getColumnCount(); i++) {
                     Object value = resultSet.getObject(i);
@@ -82,7 +86,7 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
                     columnFields.get(metaData.getColumnLabel(i)).add(field);
                 }
                 rows.add(new BufferedResultRow(rowFields));
-            } while (resultSet.next());
+            }
 
             for (Map.Entry<String, List<BufferedResultField>> entry : columnFields.entrySet()) {
                 columns.put(entry.getKey(), new BufferedResultColumn(entry.getKey(), entry.getValue()));
