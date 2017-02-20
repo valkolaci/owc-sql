@@ -32,22 +32,23 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
             stmt = connection.prepareStatement(query);
         }
         for (Map.Entry<Integer,Object> entry : parameters.entrySet()) {
+            int columnIndex = entry.getKey() + 1;
             if (entry.getValue() == null) {
-                stmt.setNull(entry.getKey(), Types.NULL);
+                stmt.setNull(columnIndex, Types.NULL);
             } else if (entry.getValue() instanceof Integer) {
-                stmt.setInt(entry.getKey(), (Integer) entry.getValue());
+                stmt.setInt(columnIndex, (Integer) entry.getValue());
             } else if (entry.getValue() instanceof Float) {
-                stmt.setFloat(entry.getKey(), (Float) entry.getValue());
+                stmt.setFloat(columnIndex, (Float) entry.getValue());
             } else if (entry.getValue() instanceof Date) {
-                stmt.setDate(entry.getKey(), (Date) entry.getValue());
+                stmt.setDate(columnIndex, (Date) entry.getValue());
             } else if (entry.getValue() instanceof String) {
-                stmt.setString(entry.getKey(), (String) entry.getValue());
+                stmt.setString(columnIndex, (String) entry.getValue());
             } else if (entry.getValue() instanceof Boolean) {
-                stmt.setBoolean(entry.getKey(), (Boolean) entry.getValue());
+                stmt.setBoolean(columnIndex, (Boolean) entry.getValue());
             } else if (entry.getValue() instanceof BigDecimal) {
-                stmt.setBigDecimal(entry.getKey(), (BigDecimal) entry.getValue());
+                stmt.setBigDecimal(columnIndex, (BigDecimal) entry.getValue());
             } else {
-                stmt.setString(entry.getKey(), entry.getValue().toString());
+                stmt.setString(columnIndex, entry.getValue().toString());
             }
         }
         stmt.execute();
