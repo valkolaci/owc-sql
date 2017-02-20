@@ -1,14 +1,16 @@
 package com.opsbears.webcomponents.sql;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 abstract class ResultField<TColumnType extends SQLResultColumn> implements SQLResultField<TColumnType> {
     private String name;
+    @Nullable
     private Object value;
     private ResultRow<TColumnType> row;
     private TColumnType column;
 
-    ResultField(String name, Object value) {
+    ResultField(String name, @Nullable Object value) {
         this.name = name;
         this.value = value;
     }
@@ -19,6 +21,7 @@ abstract class ResultField<TColumnType extends SQLResultColumn> implements SQLRe
     }
 
     @Override
+    @Nullable
     public Object getValue() {
         return value;
     }

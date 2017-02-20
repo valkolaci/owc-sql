@@ -1,15 +1,17 @@
 package com.opsbears.webcomponents.sql;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 class BufferedResultField implements BufferedSQLResultField {
     private String name;
+    @Nullable
     private Object value;
     private BufferedSQLResultColumn column;
     private BufferedSQLResultRow row;
 
-    BufferedResultField(String name, Object value) {
+    BufferedResultField(String name, @Nullable Object value) {
         this.name = name;
         this.value = value;
     }
@@ -20,6 +22,7 @@ class BufferedResultField implements BufferedSQLResultField {
     }
 
     @Override
+    @Nullable
     public Object getValue() {
         return value;
     }

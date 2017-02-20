@@ -1,5 +1,6 @@
 package com.opsbears.webcomponents.sql;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -12,6 +13,7 @@ public interface SQLResultField<TColumnType extends SQLResultColumn> {
     /**
      * Return the value as the type it is detected to be.
      */
+    @Nullable
     Object getValue();
 
     /**

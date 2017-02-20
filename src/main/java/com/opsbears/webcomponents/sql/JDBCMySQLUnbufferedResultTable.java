@@ -26,11 +26,15 @@ public class JDBCMySQLUnbufferedResultTable extends UnbufferedResultTable {
             Map<String, SQLResultField<UnbufferedSQLResultColumn>> row = new HashMap<>();
 
             for (Map.Entry<String,UnbufferedResultColumn> columnEntry : columns.entrySet()) {
+                Object value = resultSet.getObject(columnEntry.getKey());
+                if (resultSet.wasNull()) {
+                    value = null;
+                }
                 row.put(
                     columnEntry.getKey(),
                     new UnbufferedResultField(
                         columnEntry.getKey(),
-                        resultSet.getObject(columnEntry.getKey())
+                        value
                     )
                 );
             }
