@@ -56,12 +56,12 @@ public class MySQLDataMapper {
         BufferedSQLResultTable result = factory.getConnection().query(query, parameters);
 
         Constructor<?> validConstructor = null;
-        Map<String,String> fieldMap = new HashMap<>();
+        List<String> fieldList = new ArrayList<>();
         for (Constructor<?> constructor : entityClass.getConstructors()) {
             if (constructor.getParameters().length != result.getColumns().size()) {
                 continue;
             }
-            Map<String,String> localFieldMap = new HashMap<>();
+            List<String> localFieldList = new ArrayList<>();
             for (Parameter parameter : constructor.getParameters()) {
                 Column annotation = parameter.getAnnotation(Column.class);
                 if (annotation == null) {
@@ -70,10 +70,10 @@ public class MySQLDataMapper {
                 if (!result.getColumns().containsKey(annotation.value())) {
                     continue;
                 }
-                localFieldMap.put(annotation.value(), parameter.getName());
+                localFieldList.add(annotation.value());
             }
             validConstructor = constructor;
-            fieldMap = localFieldMap;
+            fieldList = localFieldList;
             break;
         }
 
@@ -85,8 +85,8 @@ public class MySQLDataMapper {
         //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < result.size(); i++) {
             List<Object> constructorParameters = new ArrayList<>();
-            for (Map.Entry<String,String> entry : fieldMap.entrySet()) {
-                constructorParameters.add(result.get(i).getField(entry.getKey()).getValue());
+            for (String entry : fieldList) {
+                constructorParameters.add(result.get(i).getField(entry).getValue());
             }
             try {
                 validConstructor.newInstance(constructorParameters.toArray());
