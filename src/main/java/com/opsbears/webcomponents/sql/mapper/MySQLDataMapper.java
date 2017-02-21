@@ -90,7 +90,7 @@ public class MySQLDataMapper {
                 constructorParameters.add(constructorParameterIterator++, result.get(i).getField(entry).getValue());
             }
             try {
-                validConstructor.newInstance(constructorParameters.toArray());
+                validConstructor.newInstance((Object[])constructorParameters.toArray());
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new DataMapperException(e);
             }
