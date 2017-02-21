@@ -11,7 +11,7 @@ public class JDBCMySQLUnbufferedResultTable extends UnbufferedResultTable {
     @Nullable
     private ResultSet resultSet;
 
-    JDBCMySQLUnbufferedResultTable(Map<String, UnbufferedResultColumn> columns, @Nullable ResultSet resultSet) {
+    JDBCMySQLUnbufferedResultTable(Map<String, UnbufferedSQLResultColumn> columns, @Nullable ResultSet resultSet) {
         super(columns);
         this.resultSet = resultSet;
     }
@@ -25,7 +25,7 @@ public class JDBCMySQLUnbufferedResultTable extends UnbufferedResultTable {
 
             Map<String, SQLResultField<UnbufferedSQLResultColumn>> row = new HashMap<>();
 
-            for (Map.Entry<String,UnbufferedResultColumn> columnEntry : columns.entrySet()) {
+            for (Map.Entry<String,UnbufferedSQLResultColumn> columnEntry : columns.entrySet()) {
                 Object value = resultSet.getObject(columnEntry.getKey());
                 if (resultSet.wasNull()) {
                     value = null;

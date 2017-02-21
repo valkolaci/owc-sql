@@ -19,6 +19,11 @@ class BufferedResultTable implements BufferedSQLResultTable {
     }
 
     @Override
+    public Map<String, BufferedSQLResultColumn> getColumns() {
+        return columns;
+    }
+
+    @Override
     public BufferedSQLResultColumn getColumnByName(String columnName) {
         return columns.get(columnName);
     }
