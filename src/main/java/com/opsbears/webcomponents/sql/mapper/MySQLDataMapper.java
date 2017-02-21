@@ -86,7 +86,7 @@ public class MySQLDataMapper {
         for (int i = 0; i < result.size(); i++) {
             List<Object> constructorParameters = new ArrayList<>();
             for (Map.Entry<String,String> entry : fieldMap.entrySet()) {
-                constructorParameters.add(result.get(i).getField(entry.getKey()));
+                constructorParameters.add(result.get(i).getField(entry.getKey()).getValue());
             }
             try {
                 validConstructor.newInstance(constructorParameters.toArray());
