@@ -84,9 +84,10 @@ public class MySQLDataMapper {
         List<T> resultList = new ArrayList<>();
         //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < result.size(); i++) {
+            int constructorParameterIterator = 0;
             List<Object> constructorParameters = new ArrayList<>();
             for (String entry : fieldList) {
-                constructorParameters.add(result.get(i).getField(entry).getValue());
+                constructorParameters.add(constructorParameterIterator++, result.get(i).getField(entry).getValue());
             }
             try {
                 validConstructor.newInstance(constructorParameters.toArray());
