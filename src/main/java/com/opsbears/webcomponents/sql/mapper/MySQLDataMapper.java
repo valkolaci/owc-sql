@@ -112,7 +112,7 @@ public class MySQLDataMapper {
             if (annotation != null) {
                 try {
                     columns.add(annotation.value());
-                    values.put(i, method.invoke(entity));
+                    values.put(i++, method.invoke(entity));
                     placeholders.add("?");
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new RuntimeException(
@@ -123,7 +123,7 @@ public class MySQLDataMapper {
         }
 
         String query = "REPLACE INTO " + entity.getClass().getAnnotation(Table.class).value() + " (" +
-                       String.join(", ", columns) + ") VALUES (" + String.join(", ", placeholders);
+                       String.join(", ", columns) + ") VALUES (" + String.join(", ", placeholders) + ")";
 
         factory.getConnection().query(query, values);
     }
