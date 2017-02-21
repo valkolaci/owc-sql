@@ -61,20 +61,25 @@ public class MySQLDataMapper {
             if (constructor.getParameters().length != result.getColumns().size()) {
                 continue;
             }
+            boolean valid = true;
             List<String> localFieldList = new ArrayList<>();
             for (Parameter parameter : constructor.getParameters()) {
                 Column annotation = parameter.getAnnotation(Column.class);
                 if (annotation == null) {
-                    continue;
+                    valid = false;
+                    break;
                 }
                 if (!result.getColumns().containsKey(annotation.value())) {
-                    continue;
+                    valid = false;
+                    break;
                 }
                 localFieldList.add(annotation.value());
             }
-            validConstructor = constructor;
-            fieldList = localFieldList;
-            break;
+            if (valid) {
+                validConstructor = constructor;
+                fieldList = localFieldList;
+                break;
+            }
         }
 
         if (validConstructor == null) {
