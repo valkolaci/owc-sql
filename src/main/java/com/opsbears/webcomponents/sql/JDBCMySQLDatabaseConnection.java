@@ -108,7 +108,7 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
                 return new JDBCMySQLUnbufferedResultTable(new HashMap<>(), null);
             }
             ResultSetMetaData                   metaData  = resultSet.getMetaData();
-            Map<String, UnbufferedResultColumn> columnMap = new HashMap<>();
+            Map<String, UnbufferedSQLResultColumn> columnMap = new HashMap<>();
             for (int i = 0; i < metaData.getColumnCount(); i++) {
                 columnMap.put(metaData.getColumnLabel(i), new UnbufferedResultColumn(metaData.getColumnLabel(i)));
             }
