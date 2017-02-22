@@ -47,6 +47,8 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
                 stmt.setBoolean(columnIndex, (Boolean) entry.getValue());
             } else if (entry.getValue() instanceof BigDecimal) {
                 stmt.setBigDecimal(columnIndex, (BigDecimal) entry.getValue());
+            } else if (entry.getValue() instanceof Date) {
+                stmt.setDate(columnIndex, (Date) entry.getValue());
             } else {
                 stmt.setString(columnIndex, entry.getValue().toString());
             }
