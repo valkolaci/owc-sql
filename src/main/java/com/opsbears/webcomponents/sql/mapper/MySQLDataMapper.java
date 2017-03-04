@@ -55,6 +55,10 @@ public class MySQLDataMapper {
     public <T> List<T> load(Class<T> entityClass, String query, Map<Integer,Object> parameters) {
         BufferedSQLResultTable result = factory.getConnection().query(query, parameters);
 
+        if (result.size() == 0) {
+            return new ArrayList<>();
+        }
+
         Constructor<?> validConstructor = null;
         List<String> fieldList = new ArrayList<>();
         for (Constructor<?> constructor : entityClass.getConstructors()) {
