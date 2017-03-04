@@ -132,9 +132,27 @@ public class MySQLDataMapper {
                 }
             }
         }
+        List<String> updatePlaceholder = new ArrayList<>();
+        for (Method method : entity.getClass().getMethods()) {
+            Column annotation = method.getAnnotation(Column.class);
+            if (annotation != null) {
+                try {
+                    updatePlaceholder.add(annotation.value() + "=?");
+                    values.put(i++, method.invoke(entity));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(
+                        "Failed to fetch column value from " + entity.getClass().getName() + "." + method.getName() + "()"
+                    );
+                }
+            }
+        }
 
-        String query = "REPLACE INTO " + entity.getClass().getAnnotation(Table.class).value() + " (" +
-                       String.join(", ", columns) + ") VALUES (" + String.join(", ", placeholders) + ")";
+        String query =
+            "INSERT INTO " + entity.getClass().getAnnotation(Table.class).value() + " (" +
+           String.join(", ", columns) +
+            ") VALUES (" +
+            String.join(", ", placeholders) +
+            ") ON DUPLICATE KEY UPDATE " + String.join(", ", updatePlaceholder);
 
         factory.getConnection().query(query, values);
     }
