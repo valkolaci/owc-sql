@@ -42,6 +42,45 @@ public class MySQLDataMapper {
     }
 
     /**
+     * Load one entity by specifying a SQL query. The class must have a constructor that matches the returned columns
+     * by their @Column annotations exactly.
+     *
+     * @param entityClass
+     * @param query
+     * @param parameters
+     * @param <T>
+     *
+     * @return
+     */
+    public <T> T loadOne(Class<T> entityClass, String query, Object... parameters) {
+        List<T> result = load(entityClass, query, parameters);
+        if (result.size() == 0) {
+            throw new EntityNotFoundException();
+        }
+        return result.get(0);
+    }
+
+    /**
+     * Load a list of entity classes by specifying a SQL query. The class must have a constructor that matches the
+     * returned columns by their @Column annotation exactly.
+     *
+     * @param entityClass
+     * @param query
+     * @param parameters
+     * @param <T>
+     *
+     * @return
+     */
+    public <T> List<T> load(Class<T> entityClass, String query, Object... parameters) {
+        Map<Integer,Object> newParameters = new HashMap<>();
+        int i = 0;
+        for (Object parameter : parameters) {
+            newParameters.put(i++, parameter);
+        }
+        return load(entityClass, query, newParameters);
+    }
+
+    /**
      * Load a list of entity classes by specifying a SQL query. The class must have a constructor that matches the
      * returned columns by their @Column annotation exactly.
      *

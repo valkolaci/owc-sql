@@ -47,14 +47,22 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
                 stmt.setBoolean(columnIndex, (Boolean) entry.getValue());
             } else if (entry.getValue() instanceof BigDecimal) {
                 stmt.setBigDecimal(columnIndex, (BigDecimal) entry.getValue());
-            } else if (entry.getValue() instanceof Date) {
-                stmt.setDate(columnIndex, (Date) entry.getValue());
             } else {
                 stmt.setString(columnIndex, entry.getValue().toString());
             }
         }
         stmt.execute();
         return stmt;
+    }
+
+    @Override
+    public BufferedSQLResultTable query(String query, Object... parameters) {
+        Map<Integer,Object> newParameters = new HashMap<>();
+        int i = 0;
+        for (Object parameter : parameters) {
+            newParameters.put(i++, parameter);
+        }
+        return query(query, newParameters);
     }
 
     @Override
@@ -100,6 +108,16 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
         } catch (SQLException e) {
             throw new JDBCMySQLQueryException(query, e);
         }
+    }
+
+    @Override
+    public UnbufferedSQLResultTable queryUnbuffered(String query, Object... parameters) {
+        Map<Integer,Object> newParameters = new HashMap<>();
+        int i = 0;
+        for (Object parameter : parameters) {
+            newParameters.put(i++, parameter);
+        }
+        return queryUnbuffered(query, newParameters);
     }
 
     @Override

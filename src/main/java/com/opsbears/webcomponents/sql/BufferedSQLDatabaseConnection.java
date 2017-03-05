@@ -14,5 +14,16 @@ public interface BufferedSQLDatabaseConnection {
      *
      * @return BufferedSQLResultTable
      */
+    BufferedSQLResultTable query(String query, Object... parameters);
+
+    /**
+     * Queries the database with the given query. The parameters will be inserted in the places denoted with question
+     * marks in an SQL injection safe way. (?)
+     *
+     * @param query
+     * @param parameters
+     *
+     * @return BufferedSQLResultTable
+     */
     BufferedSQLResultTable query(String query, Map<Integer, Object> parameters) throws RuntimeException;
 }
