@@ -153,12 +153,14 @@ public class MySQLDataMapper implements DataMapper {
                 Object value = result.get(i).getField(entry).getValue();
                 Parameter parameter = validConstructor.getParameters()[j++];
 
-                if (value instanceof Timestamp && parameter.getType().equals(Date.class)) {
-                    value = new Date(((Timestamp) value).getTime());
-                } else if (value instanceof String && parameter.getType().equals(UUID.class)) {
-                    value = UUID.fromString((String)value);
-                } else if (value instanceof Long && parameter.getType().equals(Integer.class)) {
-                    value = ((Long)value).intValue();
+                if (value != null) {
+                    if (value instanceof Timestamp && parameter.getType().equals(Date.class)) {
+                        value = new Date(((Timestamp) value).getTime());
+                    } else if (value instanceof String && parameter.getType().equals(UUID.class)) {
+                        value = UUID.fromString((String) value);
+                    } else if (value instanceof Long && parameter.getType().equals(Integer.class)) {
+                        value = ((Long) value).intValue();
+                    }
                 }
 
                 constructorParameters.add(constructorParameterIterator++, value);
