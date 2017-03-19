@@ -1,21 +1,19 @@
 package com.opsbears.webcomponents.sql.mapper;
 
 import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
-import com.opsbears.webcomponents.sql.JDBCMySQLConnectionFactory;
 import com.opsbears.webcomponents.sql.MySQLConnectionFactory;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 
 @ParametersAreNonnullByDefault
-public class MySQLDataMapper {
+public class MySQLDataMapper implements DataMapper {
     private MySQLConnectionFactory factory;
 
     public MySQLDataMapper(MySQLConnectionFactory factory) {
@@ -54,6 +52,22 @@ public class MySQLDataMapper {
      */
     public <T> T loadOne(Class<T> entityClass, String query, Object... parameters) {
         List<T> result = load(entityClass, query, parameters);
+        if (result.size() == 0) {
+            throw new EntityNotFoundException();
+        }
+        return result.get(0);
+    }
+
+    @Override
+    public <T> T loadOne(Class<T> entityClass, String field, Object value) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put(field, value);
+        return loadOne(entityClass, parameters);
+    }
+
+    @Override
+    public <T> T loadOne(Class<T> entityClass, Map<String, Object> parameters) {
+        List<T> result = load(entityClass, parameters, 1, null);
         if (result.size() == 0) {
             throw new EntityNotFoundException();
         }
@@ -134,8 +148,20 @@ public class MySQLDataMapper {
         for (int i = 0; i < result.size(); i++) {
             int constructorParameterIterator = 0;
             List<Object> constructorParameters = new ArrayList<>();
+            int j = 0;
             for (String entry : fieldList) {
-                constructorParameters.add(constructorParameterIterator++, result.get(i).getField(entry).getValue());
+                Object value = result.get(i).getField(entry).getValue();
+                Parameter parameter = validConstructor.getParameters()[j++];
+
+                if (value instanceof Timestamp && parameter.getType().equals(Date.class)) {
+                    value = new Date(((Timestamp) value).getTime());
+                } else if (value instanceof String && parameter.getType().equals(UUID.class)) {
+                    value = UUID.fromString((String)value);
+                } else if (value instanceof Long && parameter.getType().equals(Integer.class)) {
+                    value = ((Long)value).intValue();
+                }
+
+                constructorParameters.add(constructorParameterIterator++, value);
             }
             try {
                 //noinspection unchecked
@@ -145,6 +171,56 @@ public class MySQLDataMapper {
             }
         }
         return resultList;
+    }
+
+    @Override
+    public <T> List<T> load(Class<T> entityClass, String field, Object value) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put(field, value);
+        return load(entityClass, parameters);
+    }
+
+    @Override
+    public <T> List<T> load(Class<T> entityClass, Map<String, Object> parameters) {
+        return load(entityClass, parameters, null, null);
+    }
+
+    @Override
+    public <T> List<T> load(
+        Class<T> entityClass,
+        Map<String, Object> parameters,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        Map<Integer,Object> sqlParameters = new HashMap<>();
+        String sql = "SELECT\n";
+        List<String> columns = new ArrayList<>();
+        for (Method method : entityClass.getMethods()) {
+            Column annotation = method.getAnnotation(Column.class);
+            if (annotation != null) {
+                columns.add("  " + annotation.value());
+            }
+        }
+        sql += String.join(",\n", columns) + "\n";
+        sql += "FROM\n";
+        sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
+        sql += "WHERE\n";
+        List<String> conditions = new ArrayList<>();
+        int i = 0;
+        for (String parameter : parameters.keySet()) {
+            conditions.add("  " + parameter + "=?\n");
+            sqlParameters.put(i++, parameters.get(parameter));
+        }
+        sql += String.join("  AND\n", conditions);
+        if (limit != null) {
+            sql += "LIMIT ";
+            if (offset != null) {
+                sql += offset + ", " + limit;
+            } else {
+                sql += limit;
+            }
+        }
+        return load(entityClass, sql, sqlParameters);
     }
 
     public void store(Object entity) {

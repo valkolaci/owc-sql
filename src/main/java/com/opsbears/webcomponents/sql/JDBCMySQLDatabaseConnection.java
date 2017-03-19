@@ -37,14 +37,18 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
                 stmt.setInt(columnIndex, (Integer) entry.getValue());
             } else if (entry.getValue() instanceof Float) {
                 stmt.setFloat(columnIndex, (Float) entry.getValue());
+            } else if (entry.getValue() instanceof Timestamp) {
+                stmt.setTimestamp(columnIndex, (Timestamp) entry);
             } else if (entry.getValue() instanceof Date) {
-                stmt.setString(columnIndex, new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format((Date) entry.getValue()));
+                stmt.setString(columnIndex, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((Date) entry.getValue()));
             } else if (entry.getValue() instanceof String) {
                 stmt.setString(columnIndex, (String) entry.getValue());
             } else if (entry.getValue() instanceof Boolean) {
                 stmt.setBoolean(columnIndex, (Boolean) entry.getValue());
             } else if (entry.getValue() instanceof BigDecimal) {
                 stmt.setBigDecimal(columnIndex, (BigDecimal) entry.getValue());
+            } else if (entry.getValue() instanceof UUID) {
+                stmt.setString(columnIndex, entry.getValue().toString());
             } else {
                 stmt.setString(columnIndex, entry.getValue().toString());
             }
