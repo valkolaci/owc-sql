@@ -3,13 +3,11 @@ package com.opsbears.webcomponents.sql;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Date;
 
 @ParametersAreNonnullByDefault
 public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
@@ -40,7 +38,7 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
             } else if (entry.getValue() instanceof Float) {
                 stmt.setFloat(columnIndex, (Float) entry.getValue());
             } else if (entry.getValue() instanceof Date) {
-                stmt.setDate(columnIndex, (Date) entry.getValue());
+                stmt.setString(columnIndex, new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format((Date) entry.getValue()));
             } else if (entry.getValue() instanceof String) {
                 stmt.setString(columnIndex, (String) entry.getValue());
             } else if (entry.getValue() instanceof Boolean) {
@@ -74,10 +72,10 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
                 return new BufferedResultTable(new ArrayList<>(), new HashMap<>());
             }
 
-            List<BufferedResultRow> rows = new ArrayList<>();
-            Map<String, BufferedResultColumn> columns = new HashMap<>();
+            List<BufferedResultRow>                rows         = new ArrayList<>();
+            Map<String, BufferedResultColumn>      columns      = new HashMap<>();
             Map<String, List<BufferedResultField>> columnFields = new HashMap<>();
-            ResultSetMetaData metaData = resultSet.getMetaData();
+            ResultSetMetaData                      metaData     = resultSet.getMetaData();
 
             while (resultSet.next()) {
                 Map<String, SQLResultField<BufferedSQLResultColumn>> rowFields = new HashMap<>();
