@@ -15,3 +15,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile 'mysql:mysql-connector-java:6.0.6'
 }
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-parameters'
+}
