@@ -173,7 +173,6 @@ public class MySQLDataMapper implements DataMapper {
                         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                             throw new RuntimeException(e);
                         }
-                        value = Enum.valueOf((Class<Enum>)parameter.getType(), (String) value);
                     }
                 }
 
