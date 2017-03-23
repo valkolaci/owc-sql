@@ -163,6 +163,16 @@ public class MySQLDataMapper implements DataMapper {
                     }
                     if (parameter.getType().isEnum()) {
                         //noinspection unchecked,ConstantConditions
+                        try {
+                            Enum[] values = (Enum[]) parameter.getType().getMethod("values", String.class).invoke(null);
+                            for (Enum enumValue : values) {
+                                if (enumValue.toString().equals(value)) {
+                                    value = enumValue;
+                                }
+                            }
+                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                            throw new RuntimeException(e);
+                        }
                         value = Enum.valueOf((Class<Enum>)parameter.getType(), (String) value);
                     }
                 }
