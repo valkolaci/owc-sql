@@ -140,4 +140,12 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
             throw new JDBCMySQLQueryException(query, e);
         }
     }
+
+    public void finalize() {
+        try {
+            connection.close();
+        } catch (SQLException ignored) {
+
+        }
+    }
 }
