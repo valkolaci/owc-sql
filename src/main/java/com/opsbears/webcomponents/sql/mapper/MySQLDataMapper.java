@@ -161,6 +161,10 @@ public class MySQLDataMapper implements DataMapper {
                     } else if (value instanceof Long && parameter.getType().equals(Integer.class)) {
                         value = ((Long) value).intValue();
                     }
+                    if (parameter.getType().isEnum()) {
+                        //noinspection unchecked,ConstantConditions
+                        value = Enum.valueOf((Class<Enum>)parameter.getType(), (String) value);
+                    }
                 }
 
                 constructorParameters.add(constructorParameterIterator++, value);
