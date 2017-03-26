@@ -2,7 +2,6 @@ package com.opsbars.webcomponents.sql.mapper;
 
 import com.opsbears.webcomponents.sql.JDBCMySQLConnectionConfiguration;
 import com.opsbears.webcomponents.sql.JDBCMySQLConnectionFactory;
-import com.opsbears.webcomponents.sql.JDBCMySQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.MySQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.mapper.DataMapper;
 import com.opsbears.webcomponents.sql.mapper.MySQLDataMapper;
@@ -56,7 +55,7 @@ public class MySQLDataMapperTest {
             true
         );
         mapper.store(entity);
-        TestEntity loadedEntity = mapper.loadOne(TestEntity.class, "id", 1);
+        TestEntity loadedEntity = mapper.loadOneBy(TestEntity.class, "id", 1);
 
         assertEquals(1, loadedEntity.getIdField().intValue());
         assertEquals("Test", loadedEntity.getTextField());

@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @ParametersAreNonnullByDefault
@@ -31,8 +32,8 @@ public class MySQLDataMapper implements DataMapper {
      *
      * @return
      */
-    public <T> T loadOne(Class<T> entityClass, String query, Map<Integer,Object> parameters) {
-        List<T> result = load(entityClass, query, parameters);
+    public <T> T loadOneByQuery(Class<T> entityClass, String query, Map<Integer,Object> parameters) {
+        List<T> result = loadByQuery(entityClass, query, parameters);
         if (result.size() == 0) {
             throw new EntityNotFoundException();
         }
@@ -50,8 +51,8 @@ public class MySQLDataMapper implements DataMapper {
      *
      * @return
      */
-    public <T> T loadOne(Class<T> entityClass, String query, Object... parameters) {
-        List<T> result = load(entityClass, query, parameters);
+    public <T> T loadOneByQuery(Class<T> entityClass, String query, Object... parameters) {
+        List<T> result = loadByQuery(entityClass, query, parameters);
         if (result.size() == 0) {
             throw new EntityNotFoundException();
         }
@@ -59,15 +60,15 @@ public class MySQLDataMapper implements DataMapper {
     }
 
     @Override
-    public <T> T loadOne(Class<T> entityClass, String field, Object value) {
+    public <T> T loadOneBy(Class<T> entityClass, String field, Object value) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put(field, value);
-        return loadOne(entityClass, parameters);
+        return loadOneBy(entityClass, parameters);
     }
 
     @Override
-    public <T> T loadOne(Class<T> entityClass, Map<String, Object> parameters) {
-        List<T> result = load(entityClass, parameters, 1, null);
+    public <T> T loadOneBy(Class<T> entityClass, Map<String, Object> parameters) {
+        List<T> result = loadBy(entityClass, parameters, 1, null);
         if (result.size() == 0) {
             throw new EntityNotFoundException();
         }
@@ -85,13 +86,13 @@ public class MySQLDataMapper implements DataMapper {
      *
      * @return
      */
-    public <T> List<T> load(Class<T> entityClass, String query, Object... parameters) {
+    public <T> List<T> loadByQuery(Class<T> entityClass, String query, Object... parameters) {
         Map<Integer,Object> newParameters = new HashMap<>();
         int i = 0;
         for (Object parameter : parameters) {
             newParameters.put(i++, parameter);
         }
-        return load(entityClass, query, newParameters);
+        return loadByQuery(entityClass, query, newParameters);
     }
 
     /**
@@ -105,7 +106,7 @@ public class MySQLDataMapper implements DataMapper {
      *
      * @return
      */
-    public <T> List<T> load(Class<T> entityClass, String query, Map<Integer,Object> parameters) {
+    public <T> List<T> loadByQuery(Class<T> entityClass, String query, Map<Integer,Object> parameters) {
         BufferedSQLResultTable result = factory.getConnection().query(query, parameters);
 
         if (result.size() == 0) {
@@ -121,16 +122,17 @@ public class MySQLDataMapper implements DataMapper {
             boolean valid = true;
             List<String> localFieldList = new ArrayList<>();
             for (Parameter parameter : constructor.getParameters()) {
-                Column annotation = parameter.getAnnotation(Column.class);
-                if (annotation == null) {
+                Column columnAnnotation = parameter.getAnnotation(Column.class);
+                if (columnAnnotation != null) {
+                    if (!result.getColumns().containsKey(columnAnnotation.value())) {
+                        valid = false;
+                        break;
+                    }
+                    localFieldList.add(columnAnnotation.value());
+                } else {
                     valid = false;
                     break;
                 }
-                if (!result.getColumns().containsKey(annotation.value())) {
-                    valid = false;
-                    break;
-                }
-                localFieldList.add(annotation.value());
             }
             if (valid) {
                 validConstructor = constructor;
@@ -189,19 +191,27 @@ public class MySQLDataMapper implements DataMapper {
     }
 
     @Override
-    public <T> List<T> load(Class<T> entityClass, String field, Object value) {
+    public <T> List<T> loadBy(Class<T> entityClass, String field, Object value) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put(field, value);
-        return load(entityClass, parameters);
+        return loadBy(entityClass, parameters);
     }
 
     @Override
-    public <T> List<T> load(Class<T> entityClass, Map<String, Object> parameters) {
-        return load(entityClass, parameters, null, null);
+    public <T> List<T> loadBy(Class<T> entityClass, String field, Object value, @Nullable Integer limit, @Nullable Integer offset) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put(field, value);
+        return loadBy(entityClass, parameters, limit, offset);
+    }
+
+
+    @Override
+    public <T> List<T> loadBy(Class<T> entityClass, Map<String, Object> parameters) {
+        return loadBy(entityClass, parameters, null, null);
     }
 
     @Override
-    public <T> List<T> load(
+    public <T> List<T> loadBy(
         Class<T> entityClass,
         Map<String, Object> parameters,
         @Nullable Integer limit,
@@ -235,7 +245,7 @@ public class MySQLDataMapper implements DataMapper {
                 sql += limit;
             }
         }
-        return load(entityClass, sql, sqlParameters);
+        return loadByQuery(entityClass, sql, sqlParameters);
     }
 
     public void store(Object entity) {
@@ -283,6 +293,104 @@ public class MySQLDataMapper implements DataMapper {
             ") VALUES (" +
             String.join(", ", placeholders) +
             ") ON DUPLICATE KEY UPDATE " + String.join(", ", updatePlaceholder);
+
+        factory.getConnection().query(query, values);
+    }
+
+    @Override
+    public void insert(Object entity) {
+        if (entity.getClass().getAnnotation(Table.class) == null) {
+            throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
+        }
+
+        List<String> columns = new ArrayList<>();
+        Map<Integer,Object> values = new HashMap<>();
+        List<String> placeholders = new ArrayList<>();
+
+        int i = 0;
+        for (Method method : entity.getClass().getMethods()) {
+            Column annotation = method.getAnnotation(Column.class);
+            if (annotation != null) {
+                try {
+                    columns.add(annotation.value());
+                    values.put(i++, method.invoke(entity));
+                    placeholders.add("?");
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(
+                        "Failed to fetch column value from " + entity.getClass().getName() + "." + method.getName() + "()"
+                    );
+                }
+            }
+        }
+
+        String query =
+            "INSERT INTO " + entity.getClass().getAnnotation(Table.class).value() + " (" +
+            String.join(", ", columns) +
+            ") VALUES (" +
+            String.join(", ", placeholders) +
+            ")";
+
+        factory.getConnection().query(query, values);
+    }
+
+    @Override
+    public void update(Object entity) {
+        if (entity.getClass().getAnnotation(Table.class) == null) {
+            throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
+        }
+
+        Map<Integer,Object> values = new HashMap<>();
+
+        List<String> wherePlaceholder = new ArrayList<>();
+
+        int i = 0;
+        List<String> updatePlaceholder = new ArrayList<>();
+        for (Method method : entity.getClass().getMethods()) {
+            Column columnAnnotation = method.getAnnotation(Column.class);
+            if (columnAnnotation != null) {
+                try {
+                    updatePlaceholder.add(columnAnnotation.value() + "=?");
+                    values.put(i++, method.invoke(entity));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(
+                        "Failed to fetch column value from " +
+                        entity.getClass().getName() +
+                        "." +
+                        method.getName() +
+                        "()"
+                    );
+                }
+            }
+        }
+
+        for (Method method : entity.getClass().getMethods()) {
+            Primary primaryAnnotation = method.getAnnotation(Primary.class);
+            Column columnAnnotation = method.getAnnotation(Column.class);
+            if (primaryAnnotation != null) {
+                if (columnAnnotation == null) {
+                    throw new InvalidAnnotationException("@Primary always has to be used in conjunction with @Column");
+                }
+
+                wherePlaceholder.add(columnAnnotation.value() + "=?");
+                try {
+                    values.put(i++, method.invoke(entity));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(
+                        "Failed to fetch column value from " +
+                        entity.getClass().getName() +
+                        "." +
+                        method.getName() +
+                        "()"
+                    );
+                }
+            }
+        }
+
+        String query =
+            "UPDATE " +
+            entity.getClass().getAnnotation(Table.class).value() +
+            " SET " + String.join(", ", updatePlaceholder) +
+            " WHERE " + String.join(" AND ", wherePlaceholder);
 
         factory.getConnection().query(query, values);
     }
