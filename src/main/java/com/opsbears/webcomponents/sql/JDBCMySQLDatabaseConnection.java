@@ -12,6 +12,7 @@ import java.util.Date;
 @ParametersAreNonnullByDefault
 public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
     private Connection connection;
+    private boolean transactionStarted = false;
 
     public JDBCMySQLDatabaseConnection(String jdbcURL, String username, String password) {
         try {
@@ -147,5 +148,44 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
         } catch (SQLException ignored) {
 
         }
+    }
+
+    @Override
+    public void startTransaction() throws TransactionAlreadyStartedException {
+        if (transactionStarted) {
+            throw new TransactionAlreadyStartedException();
+        }
+        try {
+            connection.setAutoCommit(false);
+            transactionStarted = true;
+        } catch (SQLException e) {
+            throw new JDBCMySQLQueryException("SET autocommit=0", e);
+        }
+    }
+
+    @Override
+    public void commit() throws TransactionNotStartedException {
+        if (!transactionStarted) {
+            throw new TransactionNotStartedException();
+        }
+        try {
+            connection.commit();
+        } catch (SQLException e) {
+            throw new JDBCMySQLQueryException("COMMIT", e);
+        }
+        transactionStarted = false;
+    }
+
+    @Override
+    public void rollback() throws TransactionNotStartedException {
+        if (!transactionStarted) {
+            throw new TransactionNotStartedException();
+        }
+        try {
+            connection.rollback();
+        } catch (SQLException e) {
+            throw new JDBCMySQLQueryException("ROLLBACK", e);
+        }
+        transactionStarted = false;
     }
 }
