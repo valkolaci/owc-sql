@@ -13,6 +13,7 @@ public interface DataMapper {
     <T> T loadOneBy(Class<T> entityClass, Map<String,Object> parameters);
     <T> List<T> loadByQuery(Class<T> entityClass, String query, Object... parameters);
     <T> List<T> loadByQuery(Class<T> entityClass, String query, Map<Integer,Object> parameters);
+    <T> List<T> loadAll(Class<T> entityClass);
     <T> List<T> loadBy(Class<T> entityClass, String field, Object value);
     <T> List<T> loadBy(Class<T> entityClass, String field, Object value, @Nullable Integer limit, @Nullable Integer offset);
     <T> List<T> loadBy(Class<T> entityClass, Map<String, Object> parameters);

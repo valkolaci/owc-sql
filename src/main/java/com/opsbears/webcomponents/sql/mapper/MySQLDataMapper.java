@@ -191,6 +191,11 @@ public class MySQLDataMapper implements DataMapper {
     }
 
     @Override
+    public <T> List<T> loadAll(Class<T> entityClass) {
+        return loadBy(entityClass, new HashMap<>());
+    }
+
+    @Override
     public <T> List<T> loadBy(Class<T> entityClass, String field, Object value) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put(field, value);
@@ -229,14 +234,16 @@ public class MySQLDataMapper implements DataMapper {
         sql += String.join(",\n", columns) + "\n";
         sql += "FROM\n";
         sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
-        sql += "WHERE\n";
-        List<String> conditions = new ArrayList<>();
-        int i = 0;
-        for (String parameter : parameters.keySet()) {
-            conditions.add("  " + parameter + "=?\n");
-            sqlParameters.put(i++, parameters.get(parameter));
+        if (!parameters.isEmpty()) {
+            sql += "WHERE\n";
+            List<String> conditions = new ArrayList<>();
+            int          i          = 0;
+            for (String parameter : parameters.keySet()) {
+                conditions.add("  " + parameter + "=?\n");
+                sqlParameters.put(i++, parameters.get(parameter));
+            }
+            sql += String.join("  AND\n", conditions);
         }
-        sql += String.join("  AND\n", conditions);
         if (limit != null) {
             sql += "LIMIT ";
             if (offset != null) {
