@@ -1,6 +1,7 @@
 package com.opsbars.webcomponents.sql.mapper;
 
 import com.opsbears.webcomponents.sql.mapper.Column;
+import com.opsbears.webcomponents.sql.mapper.Primary;
 import com.opsbears.webcomponents.sql.mapper.Table;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -30,6 +31,7 @@ public class TestEntity {
         this.boolField = boolField;
     }
 
+    @Primary
     @Column("id")
     public Integer getIdField() {
         return idField;

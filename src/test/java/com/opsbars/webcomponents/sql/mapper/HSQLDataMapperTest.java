@@ -1,19 +1,17 @@
 package com.opsbars.webcomponents.sql.mapper;
 
-import com.opsbears.webcomponents.sql.JDBCMySQLConnectionConfiguration;
-import com.opsbears.webcomponents.sql.JDBCMySQLConnectionFactory;
-import com.opsbears.webcomponents.sql.MySQLDatabaseConnection;
+import com.opsbears.webcomponents.sql.JDBCHSQLConnectionConfiguration;
+import com.opsbears.webcomponents.sql.JDBCHSQLConnectionFactory;
+import com.opsbears.webcomponents.sql.HSQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.SQLException;
 import com.opsbears.webcomponents.sql.mapper.DataMapper;
-import com.opsbears.webcomponents.sql.mapper.MySQLDataMapper;
+import com.opsbears.webcomponents.sql.mapper.HSQLDataMapper;
 import org.junit.Test;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.TemporalField;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,32 +19,32 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.fail;
 
 @ParametersAreNonnullByDefault
-public class MySQLDataMapperTest {
+public class HSQLDataMapperTest {
     private DataMapper getMapper() {
-        Map<String, JDBCMySQLConnectionConfiguration> configMap = new HashMap<>();
-        configMap.put("default", new JDBCMySQLConnectionConfiguration(
-            "jdbc:mysql://localhost/test?characterEncoding=utf8&useUnicode=yes",
+        Map<String, JDBCHSQLConnectionConfiguration> configMap = new HashMap<>();
+        configMap.put("default", new JDBCHSQLConnectionConfiguration(
+            "jdbc:hsqldb:mem:test",
             "test",
             ""
         ));
-        JDBCMySQLConnectionFactory factory = new JDBCMySQLConnectionFactory(
+        JDBCHSQLConnectionFactory factory = new JDBCHSQLConnectionFactory(
             configMap
         );
-        MySQLDatabaseConnection connection = factory.getConnection();
+        HSQLDatabaseConnection connection = factory.getConnection();
         connection.query(
             "DROP TABLE IF EXISTS entitytest"
         );
         connection.query(
             "CREATE TABLE IF NOT EXISTS entitytest (\n" +
-            "  id BIGINT PRIMARY KEY AUTO_INCREMENT,\n" +
+            "  id BIGINT IDENTITY PRIMARY KEY,\n" +
             "  text_field VARCHAR(255),\n" +
             "  date_field DATETIME,\n" +
-            "  float_field DOUBLE(8,2),\n" +
-            "  bool_field BOOL\n" +
+            "  float_field DOUBLE,\n" +
+            "  bool_field BOOLEAN\n" +
             ")\n"
         );
 
-        return new MySQLDataMapper(factory);
+        return new HSQLDataMapper(factory);
     }
 
     @Test
@@ -71,7 +69,6 @@ public class MySQLDataMapperTest {
         );
         assertEquals(1.2, loadedEntity.getFloatField());
         assertEquals(true, loadedEntity.getBoolField().booleanValue());
-
 
         try {
             mapper.insert(entity);

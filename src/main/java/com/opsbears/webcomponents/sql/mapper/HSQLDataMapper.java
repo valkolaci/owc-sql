@@ -2,7 +2,7 @@ package com.opsbears.webcomponents.sql.mapper;
 
 import com.opsbears.webcomponents.sql.BufferedSQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
-import com.opsbears.webcomponents.sql.MySQLConnectionFactory;
+import com.opsbears.webcomponents.sql.HSQLConnectionFactory;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -13,17 +13,22 @@ import java.lang.reflect.Parameter;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @ParametersAreNonnullByDefault
-public class MySQLDataMapper extends AbstractDataMapper {
-    private MySQLConnectionFactory factory;
+public class HSQLDataMapper extends AbstractDataMapper {
+    private HSQLConnectionFactory factory;
 
-    public MySQLDataMapper(MySQLConnectionFactory factory) {
+    public HSQLDataMapper(HSQLConnectionFactory factory) {
         this.factory = factory;
     }
 
     protected BufferedSQLDatabaseConnection getConnection() {
         return factory.getConnection();
+    }
+
+    protected String transformColumName(String columnName) {
+        return columnName.toUpperCase();
     }
 
     @Override
@@ -39,7 +44,7 @@ public class MySQLDataMapper extends AbstractDataMapper {
         for (Method method : entityClass.getMethods()) {
             Column annotation = method.getAnnotation(Column.class);
             if (annotation != null) {
-                columns.add("  " + annotation.value());
+                columns.add("  " + annotation.value().toUpperCase());
             }
         }
         sql += String.join(",\n", columns) + "\n";
@@ -66,6 +71,7 @@ public class MySQLDataMapper extends AbstractDataMapper {
         return loadByQuery(entityClass, sql, sqlParameters);
     }
 
+    @Override
     public void store(Object entity) {
         if (entity.getClass().getAnnotation(Table.class) == null) {
             throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
@@ -74,8 +80,21 @@ public class MySQLDataMapper extends AbstractDataMapper {
         List<String> columns = new ArrayList<>();
         Map<Integer,Object> values = new HashMap<>();
         List<String> placeholders = new ArrayList<>();
+        List<String> mergeColumns = new ArrayList<>();
 
         int i = 0;
+        for (Method method : entity.getClass().getMethods()) {
+            Primary primaryAnnotation = method.getAnnotation(Primary.class);
+            Column columnAnnotation = method.getAnnotation(Column.class);
+            if (primaryAnnotation != null) {
+                if (columnAnnotation == null) {
+                    throw new InvalidAnnotationException("@Primary always has to be used in conjunction with @Column");
+                }
+
+                mergeColumns.add(columnAnnotation.value());
+            }
+        }
+
         for (Method method : entity.getClass().getMethods()) {
             Column annotation = method.getAnnotation(Column.class);
             if (annotation != null) {
@@ -90,27 +109,17 @@ public class MySQLDataMapper extends AbstractDataMapper {
                 }
             }
         }
-        List<String> updatePlaceholder = new ArrayList<>();
-        for (Method method : entity.getClass().getMethods()) {
-            Column annotation = method.getAnnotation(Column.class);
-            if (annotation != null) {
-                try {
-                    updatePlaceholder.add(annotation.value() + "=?");
-                    values.put(i++, method.invoke(entity));
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(
-                        "Failed to fetch column value from " + entity.getClass().getName() + "." + method.getName() + "()"
-                    );
-                }
-            }
+
+        if (mergeColumns.isEmpty()) {
+            throw new RuntimeException("Cannot store in HSQLDB without at least one column with the @Primary annotation on entity " + entity.getClass().getName());
         }
 
         String query =
-            "INSERT INTO " + entity.getClass().getAnnotation(Table.class).value() + " (" +
-           String.join(", ", columns) +
-            ") VALUES (" +
-            String.join(", ", placeholders) +
-            ") ON DUPLICATE KEY UPDATE " + String.join(", ", updatePlaceholder);
+            "MERGE INTO " + entity.getClass().getAnnotation(Table.class).value() + " T\n" +
+                "USING (VALUES " + String.join(", ", placeholders) + ") I (" + String.join(", ", columns) + ")\n" +
+                "ON (" + String.join(", ", mergeColumns.stream().map(e -> "T." + e + "=I." + e).collect(Collectors.toList())) + ")\n" +
+                "WHEN NOT MATCHED THEN INSERT (" + String.join(", ", columns) + ") VALUES (" + String.join(", ", columns.stream().map(e -> "I." + e).collect(Collectors.toList())) + ")\n" +
+                "WHEN MATCHED THEN UPDATE SET " + String.join(", ", columns.stream().map(e -> "T." + e + "=I." + e).collect(Collectors.toList())) + "\n";
 
         factory.getConnection().query(query, values);
     }
