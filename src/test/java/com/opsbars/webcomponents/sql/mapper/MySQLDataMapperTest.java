@@ -63,7 +63,10 @@ public class MySQLDataMapperTest {
 
         assertEquals(1, loadedEntity.getIdField().intValue());
         assertEquals("Test", loadedEntity.getTextField());
-        assertEquals(1489943447000L, loadedEntity.getDateField().toInstant(ZoneId.systemDefault().getRules().getOffset(Instant.now())).getEpochSecond()*1000);
+        assertEquals(
+            Instant.ofEpochMilli(1489943447000L).atZone(ZoneId.systemDefault()).toLocalDateTime(),
+            loadedEntity.getDateField()
+        );
         assertEquals(1.2, loadedEntity.getFloatField());
         assertEquals(true, loadedEntity.getBoolField().booleanValue());
     }
