@@ -4,6 +4,7 @@ import com.opsbears.webcomponents.sql.mapper.Column;
 import com.opsbears.webcomponents.sql.mapper.Table;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @ParametersAreNonnullByDefault
@@ -11,14 +12,14 @@ import java.util.Date;
 public class TestEntity {
     private Integer idField;
     private String  textField;
-    private Date    dateField;
+    private LocalDateTime    dateField;
     private Double  floatField;
     private Boolean boolField;
 
     public TestEntity(
         @Column("id") Integer idField,
         @Column("text_field") String textField,
-        @Column("date_field") Date dateField,
+        @Column("date_field") LocalDateTime dateField,
         @Column("float_field") Double floatField,
         @Column("bool_field") Boolean boolField
     ) {
@@ -40,7 +41,7 @@ public class TestEntity {
     }
 
     @Column("date_field")
-    public Date getDateField() {
+    public LocalDateTime getDateField() {
         return dateField;
     }
 

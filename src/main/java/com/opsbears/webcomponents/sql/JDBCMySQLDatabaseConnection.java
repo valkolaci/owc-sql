@@ -6,6 +6,11 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.chrono.ChronoLocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.Date;
 
@@ -42,6 +47,8 @@ public class JDBCMySQLDatabaseConnection implements MySQLDatabaseConnection {
                 stmt.setTimestamp(columnIndex, (Timestamp) entry);
             } else if (entry.getValue() instanceof Date) {
                 stmt.setString(columnIndex, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((Date) entry.getValue()));
+            } else if (entry.getValue() instanceof ChronoLocalDate) {
+                stmt.setString(columnIndex, ((ChronoLocalDate) entry.getValue()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             } else if (entry.getValue() instanceof String) {
                 stmt.setString(columnIndex, (String) entry.getValue());
             } else if (entry.getValue() instanceof Boolean) {

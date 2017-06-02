@@ -8,6 +8,10 @@ import com.opsbears.webcomponents.sql.mapper.MySQLDataMapper;
 import org.junit.Test;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.TemporalField;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +50,7 @@ public class MySQLDataMapperTest {
     @Test
     public void testSimpleStoreLoad() {
         DataMapper mapper = getMapper();
-        Date date = new Date(1489943447000L);
+        LocalDateTime date = Instant.ofEpochMilli(1489943447000L).atZone(ZoneId.systemDefault()).toLocalDateTime();
         TestEntity entity = new TestEntity(
             1,
             "Test",
@@ -59,7 +63,7 @@ public class MySQLDataMapperTest {
 
         assertEquals(1, loadedEntity.getIdField().intValue());
         assertEquals("Test", loadedEntity.getTextField());
-        assertEquals(1489943447000L, loadedEntity.getDateField().getTime());
+        assertEquals(1489943447000L, loadedEntity.getDateField().toInstant(ZoneId.systemDefault().getRules().getOffset(Instant.now())).getEpochSecond()*1000);
         assertEquals(1.2, loadedEntity.getFloatField());
         assertEquals(true, loadedEntity.getBoolField().booleanValue());
     }

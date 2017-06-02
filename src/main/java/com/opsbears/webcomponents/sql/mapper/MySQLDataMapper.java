@@ -158,6 +158,8 @@ public class MySQLDataMapper implements DataMapper {
                 if (value != null) {
                     if (value instanceof Timestamp && parameter.getType().equals(Date.class)) {
                         value = new Date(((Timestamp) value).getTime());
+                    } else if (value instanceof Timestamp && parameter.getType().equals(LocalDateTime.class)) {
+                        value = ((Timestamp) value).toLocalDateTime();
                     } else if (value instanceof String && parameter.getType().equals(UUID.class)) {
                         value = UUID.fromString((String) value);
                     } else if (value instanceof Long && parameter.getType().equals(Integer.class)) {
@@ -398,6 +400,48 @@ public class MySQLDataMapper implements DataMapper {
             entity.getClass().getAnnotation(Table.class).value() +
             " SET " + String.join(", ", updatePlaceholder) +
             " WHERE " + String.join(" AND ", wherePlaceholder);
+
+        factory.getConnection().query(query, values);
+    }
+
+    @Override
+    public void delete(Object entity) {
+        if (entity.getClass().getAnnotation(Table.class) == null) {
+            throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
+        }
+
+        Map<Integer,Object> values = new HashMap<>();
+
+        List<String> wherePlaceholder = new ArrayList<>();
+
+        int i = 0;
+        for (Method method : entity.getClass().getMethods()) {
+            Primary primaryAnnotation = method.getAnnotation(Primary.class);
+            Column columnAnnotation = method.getAnnotation(Column.class);
+            if (primaryAnnotation != null) {
+                if (columnAnnotation == null) {
+                    throw new InvalidAnnotationException("@Primary always has to be used in conjunction with @Column");
+                }
+
+                wherePlaceholder.add(columnAnnotation.value() + "=?");
+                try {
+                    values.put(i++, method.invoke(entity));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(
+                        "Failed to fetch column value from " +
+                            entity.getClass().getName() +
+                            "." +
+                            method.getName() +
+                            "()"
+                    );
+                }
+            }
+        }
+
+        String query =
+            "DELETE FROM " +
+                entity.getClass().getAnnotation(Table.class).value() +
+                " WHERE " + String.join(" AND ", wherePlaceholder);
 
         factory.getConnection().query(query, values);
     }

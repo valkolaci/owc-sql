@@ -21,4 +21,5 @@ public interface DataMapper {
     void store(Object entity);
     void insert(Object entity);
     void update(Object entity);
+    void delete(Object entity);
 }
