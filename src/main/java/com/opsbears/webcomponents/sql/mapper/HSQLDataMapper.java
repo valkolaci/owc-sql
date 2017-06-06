@@ -35,6 +35,8 @@ public class HSQLDataMapper extends AbstractDataMapper {
     public <T> List<T> loadBy(
         Class<T> entityClass,
         Map<String, Object> parameters,
+        @Nullable String orderBy,
+        @Nullable OrderDirection orderDirection,
         @Nullable Integer limit,
         @Nullable Integer offset
     ) {
@@ -59,6 +61,9 @@ public class HSQLDataMapper extends AbstractDataMapper {
                 sqlParameters.put(i++, parameters.get(parameter));
             }
             sql += String.join("  AND\n", conditions);
+        }
+        if (orderBy != null && orderDirection != null) {
+            sql += "ORDER BY " + orderBy + " " + orderDirection.toString();
         }
         if (limit != null) {
             sql += "LIMIT ";

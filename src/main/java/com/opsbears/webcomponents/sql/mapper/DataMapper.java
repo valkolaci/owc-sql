@@ -16,10 +16,17 @@ public interface DataMapper {
     <T> List<T> loadAll(Class<T> entityClass);
     <T> List<T> loadBy(Class<T> entityClass, String field, Object value);
     <T> List<T> loadBy(Class<T> entityClass, String field, Object value, @Nullable Integer limit, @Nullable Integer offset);
+    <T> List<T> loadBy(Class<T> entityClass, String field, Object value, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset);
     <T> List<T> loadBy(Class<T> entityClass, Map<String, Object> parameters);
     <T> List<T> loadBy(Class<T> entityClass, Map<String,Object> parameters, @Nullable Integer limit, @Nullable Integer offset);
+    <T> List<T> loadBy(Class<T> entityClass, Map<String, Object> parameters, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset);
     void store(Object entity);
     void insert(Object entity);
     void update(Object entity);
     void delete(Object entity);
+
+    enum OrderDirection {
+        ASC,
+        DESC
+    }
 }

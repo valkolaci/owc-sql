@@ -211,10 +211,26 @@ abstract public class AbstractDataMapper implements DataMapper {
         return loadBy(entityClass, parameters, limit, offset);
     }
 
+    @Override
+    public <T> List<T> loadBy(Class<T> entityClass, String field, Object value, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put(field, value);
+        return loadBy(entityClass, parameters, orderBy, orderDirection, limit, offset);
+    }
 
     @Override
     public <T> List<T> loadBy(Class<T> entityClass, Map<String, Object> parameters) {
         return loadBy(entityClass, parameters, null, null);
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        Class<T> entityClass,
+        Map<String, Object> parameters,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        return loadBy(entityClass, parameters, null, null, limit, offset);
     }
 
     @Override
