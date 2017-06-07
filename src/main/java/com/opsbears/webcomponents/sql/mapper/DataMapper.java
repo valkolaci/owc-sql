@@ -25,7 +25,7 @@ public interface DataMapper {
     void update(Object entity);
     void delete(Object entity);
 
-    public enum OrderDirection {
+    enum OrderDirection {
         ASC,
         DESC
     }

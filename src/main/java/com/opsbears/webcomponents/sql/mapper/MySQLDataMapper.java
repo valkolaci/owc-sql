@@ -58,7 +58,7 @@ public class MySQLDataMapper extends AbstractDataMapper {
             sql += String.join("  AND\n", conditions);
         }
         if (orderBy != null && orderDirection != null) {
-            sql += "ORDER BY " + orderBy + " " + orderDirection.toString();
+            sql += "ORDER BY " + orderBy + " " + orderDirection.toString() + " ";
         }
         if (limit != null) {
             sql += "LIMIT ";
