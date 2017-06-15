@@ -1,5 +1,6 @@
 package com.opsbars.webcomponents.sql;
 
+import com.opsbears.webcomponents.sql.JDBCHSQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.JDBCMySQLDatabaseConnection;
 import org.junit.Test;
 
@@ -9,8 +10,8 @@ import java.util.Date;
 
 @ParametersAreNonnullByDefault
 public class JDBCHSQLConnectionTest {
-    private JDBCMySQLDatabaseConnection getConnection() {
-        JDBCMySQLDatabaseConnection connection = new JDBCMySQLDatabaseConnection(
+    private JDBCHSQLDatabaseConnection getConnection() {
+        JDBCHSQLDatabaseConnection connection = new JDBCHSQLDatabaseConnection(
             "jdbc:hsqldb:mem:test",
             "test",
             ""

@@ -372,4 +372,35 @@ abstract public class AbstractDataMapper implements DataMapper {
 
         getConnection().query(query, values);
     }
+
+    @Override
+    public <T> int countBy(Class<T> entityClass, String field, Object value) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put(field, value);
+        return countBy(entityClass, parameters);
+    }
+
+    @Override
+    public <T> int countBy(
+        Class<T> entityClass,
+        Map<String, Object> parameters
+    ) {
+        Map<Integer,Object> sqlParameters = new HashMap<>();
+        String sql = "SELECT\n";
+        sql += "COUNT(*) cnt\n";
+        sql += "FROM\n";
+        sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
+        if (!parameters.isEmpty()) {
+            sql += "WHERE\n";
+            List<String> conditions = new ArrayList<>();
+            int          i          = 0;
+            for (String parameter : parameters.keySet()) {
+                conditions.add("  " + parameter + "=?\n");
+                sqlParameters.put(i++, parameters.get(parameter));
+            }
+            sql += String.join("  AND\n", conditions);
+        }
+
+        return (int) getConnection().query(sql, sqlParameters).getRow(0).getField("cnt").getValue();
+    }
 }

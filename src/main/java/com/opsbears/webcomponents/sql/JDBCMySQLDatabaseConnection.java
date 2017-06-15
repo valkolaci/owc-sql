@@ -20,7 +20,7 @@ public class JDBCMySQLDatabaseConnection extends JDBCDatabaseConnection implemen
 
     public JDBCMySQLDatabaseConnection(String jdbcURL, String username, String password) {
         try {
-            connection = DriverManager.getConnection(jdbcURL, username, password);
+            connection = DriverManager.getConnection(jdbcURL + "&serverTimezone=GMT", username, password);
         } catch (SQLException e) {
             throw new JDBCMySQLConnectionException(e);
         }

@@ -31,7 +31,7 @@ public class JDBCMySQLConnectionFactory implements MySQLConnectionFactory {
             connections.get().put(name, new JDBCMySQLDatabaseConnection(configuration.getJdbcUrl(), configuration.getUsername(), configuration.getPassword()));
         }
         try {
-            connections.get().get(name).query("SELECT 1=1", new HashMap<>());
+            connections.get().get(name).query("SELECT 1=1");
         } catch (MySQLException e) {
             connections.get().put(name, new JDBCMySQLDatabaseConnection(configuration.getJdbcUrl(), configuration.getUsername(), configuration.getPassword()));
         }
