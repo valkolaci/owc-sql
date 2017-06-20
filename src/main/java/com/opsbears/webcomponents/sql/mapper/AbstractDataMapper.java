@@ -9,6 +9,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -374,14 +375,14 @@ abstract public class AbstractDataMapper implements DataMapper {
     }
 
     @Override
-    public <T> int countBy(Class<T> entityClass, String field, Object value) {
+    public <T> long countBy(Class<T> entityClass, String field, Object value) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put(field, value);
         return countBy(entityClass, parameters);
     }
 
     @Override
-    public <T> int countBy(
+    public <T> long countBy(
         Class<T> entityClass,
         Map<String, Object> parameters
     ) {
@@ -401,6 +402,17 @@ abstract public class AbstractDataMapper implements DataMapper {
             sql += String.join("  AND\n", conditions);
         }
 
-        return (int) getConnection().query(sql, sqlParameters).getRow(0).getField("cnt").getValue();
+        Object value = getConnection().query(sql, sqlParameters).getRow(0).getField("cnt").getValue();
+        if (value instanceof Integer) {
+            return (((Integer) value).longValue());
+        } else if (value instanceof Long) {
+            return (Long) value;
+        } else if (value instanceof Short) {
+            return ((Short) value).longValue();
+        } else if (value instanceof BigInteger) {
+            return ((BigInteger)value).longValue();
+        } else {
+            throw new RuntimeException("Unexpected return type for count");
+        }
     }
 }

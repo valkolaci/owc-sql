@@ -25,8 +25,8 @@ public interface DataMapper {
     void insert(Object entity);
     void update(Object entity);
     void delete(Object entity);
-    <T> int countBy(Class<T> entityClass, String field, Object value);
-    <T> int countBy(Class<T> entityClass, Map<String, Object> parameters);
+    <T> long countBy(Class<T> entityClass, String field, Object value);
+    <T> long countBy(Class<T> entityClass, Map<String, Object> parameters);
 
 
     enum OrderDirection {
