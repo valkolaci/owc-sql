@@ -2,6 +2,7 @@ package com.opsbears.webcomponents.sql.querybuilder;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,16 @@ public class LogicalConditionList extends Condition {
     ) {
         this.type = type;
         this.conditions = conditions;
+    }
+
+    public LogicalConditionList(
+        Type type,
+        Condition... conditions
+    ) {
+        this.type = type;
+        ConditionList conditionList = new ConditionList();
+        conditionList.addAll(Arrays.asList(conditions));
+        this.conditions = conditionList;
     }
 
     public Type getType() {
