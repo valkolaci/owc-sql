@@ -402,7 +402,7 @@ abstract public class AbstractDataMapper implements DataMapper {
             sql += String.join("  AND\n", conditions);
         }
 
-        Object value = getConnection().query(sql, sqlParameters).getRow(0).getField("cnt").getValue();
+        Object value = getConnection().query(sql, sqlParameters).getRow(0).getField(transformColumName("cnt")).getValue();
         if (value instanceof Integer) {
             return (((Integer) value).longValue());
         } else if (value instanceof Long) {
