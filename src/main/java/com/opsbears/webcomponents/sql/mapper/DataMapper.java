@@ -1,5 +1,7 @@
 package com.opsbears.webcomponents.sql.mapper;
 
+import com.opsbears.webcomponents.sql.querybuilder.Condition;
+
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashMap;
@@ -21,13 +23,16 @@ public interface DataMapper {
     <T> List<T> loadBy(Class<T> entityClass, Map<String, Object> parameters);
     <T> List<T> loadBy(Class<T> entityClass, Map<String,Object> parameters, @Nullable Integer limit, @Nullable Integer offset);
     <T> List<T> loadBy(Class<T> entityClass, Map<String, Object> parameters, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset);
+    <T> List<T> loadBy(Class<T> entityClass, Condition condition);
+    <T> List<T> loadBy(Class<T> entityClass, Condition condition, @Nullable Integer limit, @Nullable Integer offset);
+    <T> List<T> loadBy(Class<T> entityClass, Condition condition, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset);
     void store(Object entity);
     void insert(Object entity);
     void update(Object entity);
     void delete(Object entity);
     <T> long countBy(Class<T> entityClass, String field, Object value);
     <T> long countBy(Class<T> entityClass, Map<String, Object> parameters);
-
+    <T> long countBy(Class<T> entityClass, Condition condition);
 
     enum OrderDirection {
         ASC,

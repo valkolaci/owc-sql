@@ -3,6 +3,7 @@ package com.opsbears.webcomponents.sql.mapper;
 import com.opsbears.webcomponents.sql.BufferedSQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
 import com.opsbears.webcomponents.sql.HSQLConnectionFactory;
+import com.opsbears.webcomponents.sql.querybuilder.Condition;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -127,5 +128,13 @@ public class HSQLDataMapper extends AbstractDataMapper {
                 "WHEN MATCHED THEN UPDATE SET " + String.join(", ", columns.stream().map(e -> "T." + e + "=I." + e).collect(Collectors.toList())) + "\n";
 
         factory.getConnection().query(query, values);
+    }
+
+    @Override
+    public <T> long countBy(
+        Class<T> entityClass,
+        Condition condition
+    ) {
+        return 0;
     }
 }

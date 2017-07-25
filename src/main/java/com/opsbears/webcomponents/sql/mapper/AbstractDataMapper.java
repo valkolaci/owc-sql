@@ -2,6 +2,7 @@ package com.opsbears.webcomponents.sql.mapper;
 
 import com.opsbears.webcomponents.sql.BufferedSQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
+import com.opsbears.webcomponents.sql.querybuilder.Condition;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -235,6 +236,48 @@ abstract public class AbstractDataMapper implements DataMapper {
     }
 
     @Override
+    public <T> List<T> loadBy(
+        Class<T> entityClass,
+        Condition condition,
+        @Nullable String orderBy,
+        @Nullable OrderDirection orderDirection,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        Map<Integer,Object> sqlParameters = new HashMap<>();
+        String sql = "SELECT\n";
+        List<String> columns = new ArrayList<>();
+        for (Method method : entityClass.getMethods()) {
+            Column annotation = method.getAnnotation(Column.class);
+            if (annotation != null) {
+                columns.add("  " + annotation.value().toUpperCase());
+            }
+        }
+        sql += String.join(",\n", columns) + "\n";
+        sql += "FROM\n";
+        sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
+        if (!condition.getTemplatedQuery().isEmpty()) {
+            sql += "WHERE " + condition.getTemplatedQuery() + " ";
+            int i = 0;
+            for (Object parameterValue : condition.getParameters()) {
+                sqlParameters.put(i, parameterValue);
+            }
+        }
+        if (orderBy != null && orderDirection != null) {
+            sql += "ORDER BY " + orderBy + " " + orderDirection.toString() + " ";
+        }
+        if (limit != null) {
+            sql += "LIMIT ";
+            if (offset != null) {
+                sql += offset + ", " + limit;
+            } else {
+                sql += limit;
+            }
+        }
+        return loadByQuery(entityClass, sql, sqlParameters);
+    }
+
+    @Override
     public void insert(Object entity) {
         if (entity.getClass().getAnnotation(Table.class) == null) {
             throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
@@ -402,7 +445,7 @@ abstract public class AbstractDataMapper implements DataMapper {
             sql += String.join("  AND\n", conditions);
         }
 
-        Object value = getConnection().query(sql, sqlParameters).getRow(0).getField("cnt").getValue();
+        Object value = getConnection().query(sql, sqlParameters).getRow(0).getField(transformColumName("cnt")).getValue();
         if (value instanceof Integer) {
             return (((Integer) value).longValue());
         } else if (value instanceof Long) {
@@ -414,5 +457,55 @@ abstract public class AbstractDataMapper implements DataMapper {
         } else {
             throw new RuntimeException("Unexpected return type for count");
         }
+    }
+
+    @Override
+    public <T> long countBy(
+        Class<T> entityClass,
+        Condition condition
+    ) {
+        Map<Integer,Object> sqlParameters = new HashMap<>();
+        String sql = "SELECT\n";
+        sql += "COUNT(*) cnt\n";
+        sql += "FROM\n";
+        sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
+        if (!condition.getTemplatedQuery().isEmpty()) {
+            sql += "WHERE " + condition.getTemplatedQuery() + " ";
+            int i = 0;
+            for (Object parameterValue : condition.getParameters()) {
+                sqlParameters.put(i, parameterValue);
+            }
+        }
+
+        Object value = getConnection().query(sql, sqlParameters).getRow(0).getField(transformColumName("cnt")).getValue();
+        if (value instanceof Integer) {
+            return (((Integer) value).longValue());
+        } else if (value instanceof Long) {
+            return (Long) value;
+        } else if (value instanceof Short) {
+            return ((Short) value).longValue();
+        } else if (value instanceof BigInteger) {
+            return ((BigInteger)value).longValue();
+        } else {
+            throw new RuntimeException("Unexpected return type for count");
+        }
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        Class<T> entityClass,
+        Condition condition
+    ) {
+        return this.loadBy(entityClass, condition, null, null, null, null);
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        Class<T> entityClass,
+        Condition condition,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        return this.loadBy(entityClass, condition, null, null, limit, offset);
     }
 }

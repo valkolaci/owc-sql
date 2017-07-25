@@ -1,4 +1,4 @@
-package com.opsbars.webcomponents.sql.mapper;
+package com.opsbears.webcomponents.sql.mapper;
 
 import com.opsbears.webcomponents.sql.JDBCHSQLConnectionConfiguration;
 import com.opsbears.webcomponents.sql.JDBCHSQLConnectionFactory;

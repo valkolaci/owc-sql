@@ -1,4 +1,4 @@
-package com.opsbars.webcomponents.sql.migration;
+package com.opsbears.webcomponents.sql.migration;
 
 import com.opsbears.webcomponents.sql.JDBCHSQLConnectionConfiguration;
 import com.opsbears.webcomponents.sql.JDBCHSQLConnectionFactory;

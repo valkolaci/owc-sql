@@ -1,4 +1,4 @@
-package com.opsbars.webcomponents.sql;
+package com.opsbears.webcomponents.sql;
 
 import com.opsbears.webcomponents.sql.JDBCMySQLDatabaseConnection;
 import org.junit.Test;
