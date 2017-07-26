@@ -27,7 +27,7 @@ public class MySQLDataMapper extends AbstractDataMapper {
     }
 
     protected String transformColumName(String columnName) {
-        return columnName.toUpperCase();
+        return columnName;
     }
 
     public void store(Object entity) {
