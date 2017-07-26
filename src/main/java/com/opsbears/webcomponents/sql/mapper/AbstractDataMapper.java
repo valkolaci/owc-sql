@@ -284,7 +284,7 @@ abstract public class AbstractDataMapper implements DataMapper {
             sql += "WHERE " + condition.getTemplatedQuery() + " ";
             int i = 0;
             for (Object parameterValue : condition.getParameters()) {
-                sqlParameters.put(i, parameterValue);
+                sqlParameters.put(i++, parameterValue);
             }
         }
         if (orderBy != null && orderDirection != null) {
