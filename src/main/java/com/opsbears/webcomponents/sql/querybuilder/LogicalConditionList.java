@@ -39,13 +39,15 @@ public class LogicalConditionList extends Condition {
 
     @Override
     public String getTemplatedQuery() {
-        return
-            "(" +
-                conditions
-                    .stream()
-                    .map(Condition::getTemplatedQuery)
-                    .collect(Collectors.joining(" " + type.toString() + " ")) +
-            ")";
+        String subconditions = conditions
+            .stream()
+            .map(Condition::getTemplatedQuery)
+            .filter(condition -> !condition.isEmpty())
+            .collect(Collectors.joining(" " + type.toString() + " "));
+        if (subconditions.isEmpty()) {
+            return "";
+        }
+        return "(" + subconditions + ")";
     }
 
     @Override
