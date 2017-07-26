@@ -4,6 +4,7 @@ import com.opsbears.webcomponents.sql.BufferedSQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
 import com.opsbears.webcomponents.sql.HSQLConnectionFactory;
 import com.opsbears.webcomponents.sql.querybuilder.Condition;
+import com.opsbears.webcomponents.sql.querybuilder.TableSpec;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -30,51 +31,6 @@ public class HSQLDataMapper extends AbstractDataMapper {
 
     protected String transformColumName(String columnName) {
         return columnName.toUpperCase();
-    }
-
-    @Override
-    public <T> List<T> loadBy(
-        Class<T> entityClass,
-        Map<String, Object> parameters,
-        @Nullable String orderBy,
-        @Nullable OrderDirection orderDirection,
-        @Nullable Integer limit,
-        @Nullable Integer offset
-    ) {
-        Map<Integer,Object> sqlParameters = new HashMap<>();
-        String sql = "SELECT\n";
-        List<String> columns = new ArrayList<>();
-        for (Method method : entityClass.getMethods()) {
-            Column annotation = method.getAnnotation(Column.class);
-            if (annotation != null) {
-                columns.add("  " + annotation.value().toUpperCase());
-            }
-        }
-        sql += String.join(",\n", columns) + "\n";
-        sql += "FROM\n";
-        sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
-        if (!parameters.isEmpty()) {
-            sql += "WHERE\n";
-            List<String> conditions = new ArrayList<>();
-            int          i          = 0;
-            for (String parameter : parameters.keySet()) {
-                conditions.add("  " + parameter + "=?\n");
-                sqlParameters.put(i++, parameters.get(parameter));
-            }
-            sql += String.join("  AND\n", conditions);
-        }
-        if (orderBy != null && orderDirection != null) {
-            sql += "ORDER BY " + orderBy + " " + orderDirection.toString() + " ";
-        }
-        if (limit != null) {
-            sql += "LIMIT ";
-            if (offset != null) {
-                sql += offset + ", " + limit;
-            } else {
-                sql += limit;
-            }
-        }
-        return loadByQuery(entityClass, sql, sqlParameters);
     }
 
     @Override
@@ -128,13 +84,5 @@ public class HSQLDataMapper extends AbstractDataMapper {
                 "WHEN MATCHED THEN UPDATE SET " + String.join(", ", columns.stream().map(e -> "T." + e + "=I." + e).collect(Collectors.toList())) + "\n";
 
         factory.getConnection().query(query, values);
-    }
-
-    @Override
-    public <T> long countBy(
-        Class<T> entityClass,
-        Condition condition
-    ) {
-        return 0;
     }
 }

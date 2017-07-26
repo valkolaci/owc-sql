@@ -14,7 +14,7 @@ public class FieldName extends Field {
 
     @Override
     public String getTemplatedQuery() {
-        return "`" + fieldName + "`";
+        return " " + fieldName + " ";
     }
 
     @Override

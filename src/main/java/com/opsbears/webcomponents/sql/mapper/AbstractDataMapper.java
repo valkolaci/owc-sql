@@ -2,7 +2,7 @@ package com.opsbears.webcomponents.sql.mapper;
 
 import com.opsbears.webcomponents.sql.BufferedSQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
-import com.opsbears.webcomponents.sql.querybuilder.Condition;
+import com.opsbears.webcomponents.sql.querybuilder.*;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -244,6 +244,30 @@ abstract public class AbstractDataMapper implements DataMapper {
         @Nullable Integer limit,
         @Nullable Integer offset
     ) {
+        return loadBy(
+            entityClass,
+            new SimpleTableSpec(
+                entityClass.getAnnotation(Table.class).value(),
+                null
+            ),
+            condition,
+            orderBy,
+            orderDirection,
+            limit,
+            offset
+        );
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        Class<T> entityClass,
+        TableSpec tableSpec,
+        Condition condition,
+        @Nullable String orderBy,
+        @Nullable OrderDirection orderDirection,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
         Map<Integer,Object> sqlParameters = new HashMap<>();
         String sql = "SELECT\n";
         List<String> columns = new ArrayList<>();
@@ -255,7 +279,7 @@ abstract public class AbstractDataMapper implements DataMapper {
         }
         sql += String.join(",\n", columns) + "\n";
         sql += "FROM\n";
-        sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
+        sql += tableSpec.toString() + "\n";
         if (!condition.getTemplatedQuery().isEmpty()) {
             sql += "WHERE " + condition.getTemplatedQuery() + " ";
             int i = 0;
@@ -275,6 +299,69 @@ abstract public class AbstractDataMapper implements DataMapper {
             }
         }
         return loadByQuery(entityClass, sql, sqlParameters);
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        Class<T> entityClass,
+        TableSpec tableSpec,
+        Condition condition
+    ) {
+        return loadBy(
+            entityClass,
+            tableSpec,
+            condition,
+            null,
+            null,
+            null,
+            null
+        );
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        Class<T> entityClass,
+        TableSpec tableSpec,
+        Condition condition,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        return loadBy(
+            entityClass,
+            tableSpec,
+            condition,
+            null,
+            null,
+            limit,
+            offset
+        );
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        Class<T> entityClass,
+        Map<String, Object> parameters,
+        @Nullable String orderBy,
+        @Nullable OrderDirection orderDirection,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        List<Condition> conditions = new ArrayList<>();
+        for (Map.Entry<String, Object> parameter : parameters.entrySet()) {
+            conditions.add(new ComparisonCondition(
+                new FieldName(parameter.getKey()),
+                ComparisonCondition.Operator.EQUALS,
+                new com.opsbears.webcomponents.sql.querybuilder.Parameter(parameter.getValue())
+            ));
+        }
+        return loadBy(
+            entityClass,
+            new LogicalConditionList(LogicalConditionList.Type.AND, conditions.toArray(new Condition[0])),
+            orderBy,
+            orderDirection,
+            limit,
+            offset
+        );
     }
 
     @Override
@@ -429,34 +516,18 @@ abstract public class AbstractDataMapper implements DataMapper {
         Class<T> entityClass,
         Map<String, Object> parameters
     ) {
-        Map<Integer,Object> sqlParameters = new HashMap<>();
-        String sql = "SELECT\n";
-        sql += "COUNT(*) cnt\n";
-        sql += "FROM\n";
-        sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
-        if (!parameters.isEmpty()) {
-            sql += "WHERE\n";
-            List<String> conditions = new ArrayList<>();
-            int          i          = 0;
-            for (String parameter : parameters.keySet()) {
-                conditions.add("  " + parameter + "=?\n");
-                sqlParameters.put(i++, parameters.get(parameter));
-            }
-            sql += String.join("  AND\n", conditions);
+        List<Condition> conditions = new ArrayList<>();
+        for (Map.Entry<String, Object> parameter : parameters.entrySet()) {
+            conditions.add(new ComparisonCondition(
+                new FieldName(parameter.getKey()),
+                ComparisonCondition.Operator.EQUALS,
+                new com.opsbears.webcomponents.sql.querybuilder.Parameter(parameter.getValue())
+            ));
         }
-
-        Object value = getConnection().query(sql, sqlParameters).getRow(0).getField(transformColumName("cnt")).getValue();
-        if (value instanceof Integer) {
-            return (((Integer) value).longValue());
-        } else if (value instanceof Long) {
-            return (Long) value;
-        } else if (value instanceof Short) {
-            return ((Short) value).longValue();
-        } else if (value instanceof BigInteger) {
-            return ((BigInteger)value).longValue();
-        } else {
-            throw new RuntimeException("Unexpected return type for count");
-        }
+        return countBy(
+            entityClass,
+            new LogicalConditionList(LogicalConditionList.Type.AND, conditions.toArray(new Condition[0]))
+        );
     }
 
     @Override
@@ -464,11 +535,15 @@ abstract public class AbstractDataMapper implements DataMapper {
         Class<T> entityClass,
         Condition condition
     ) {
+        return countBy(entityClass, new SimpleTableSpec(entityClass.getAnnotation(Table.class).value(), null), condition);
+    }
+
+    public <T> long countBy(Class<T> entityClass, TableSpec tableSpec, Condition condition) {
         Map<Integer,Object> sqlParameters = new HashMap<>();
         String sql = "SELECT\n";
         sql += "COUNT(*) cnt\n";
         sql += "FROM\n";
-        sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
+        sql += tableSpec.toString() + "\n";
         if (!condition.getTemplatedQuery().isEmpty()) {
             sql += "WHERE " + condition.getTemplatedQuery() + " ";
             int i = 0;
@@ -490,6 +565,7 @@ abstract public class AbstractDataMapper implements DataMapper {
             throw new RuntimeException("Unexpected return type for count");
         }
     }
+
 
     @Override
     public <T> List<T> loadBy(

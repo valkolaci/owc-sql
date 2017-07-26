@@ -14,7 +14,7 @@ public class Parameter extends Field {
 
     @Override
     public String getTemplatedQuery() {
-        return "?";
+        return " ? ";
     }
 
     @Override

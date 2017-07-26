@@ -26,49 +26,8 @@ public class MySQLDataMapper extends AbstractDataMapper {
         return factory.getConnection();
     }
 
-    @Override
-    public <T> List<T> loadBy(
-        Class<T> entityClass,
-        Map<String, Object> parameters,
-        @Nullable String orderBy,
-        @Nullable OrderDirection orderDirection,
-        @Nullable Integer limit,
-        @Nullable Integer offset
-    ) {
-        Map<Integer,Object> sqlParameters = new HashMap<>();
-        String sql = "SELECT\n";
-        List<String> columns = new ArrayList<>();
-        for (Method method : entityClass.getMethods()) {
-            Column annotation = method.getAnnotation(Column.class);
-            if (annotation != null) {
-                columns.add("  " + annotation.value());
-            }
-        }
-        sql += String.join(",\n", columns) + "\n";
-        sql += "FROM\n";
-        sql += "  " + entityClass.getAnnotation(Table.class).value() + "\n";
-        if (!parameters.isEmpty()) {
-            sql += "WHERE\n";
-            List<String> conditions = new ArrayList<>();
-            int          i          = 0;
-            for (String parameter : parameters.keySet()) {
-                conditions.add("  " + parameter + "=?\n");
-                sqlParameters.put(i++, parameters.get(parameter));
-            }
-            sql += String.join("  AND\n", conditions);
-        }
-        if (orderBy != null && orderDirection != null) {
-            sql += "ORDER BY " + orderBy + " " + orderDirection.toString() + " ";
-        }
-        if (limit != null) {
-            sql += "LIMIT ";
-            if (offset != null) {
-                sql += offset + ", " + limit;
-            } else {
-                sql += limit;
-            }
-        }
-        return loadByQuery(entityClass, sql, sqlParameters);
+    protected String transformColumName(String columnName) {
+        return columnName.toUpperCase();
     }
 
     public void store(Object entity) {
