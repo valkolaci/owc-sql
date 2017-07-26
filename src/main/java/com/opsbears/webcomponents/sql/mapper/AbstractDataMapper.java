@@ -274,7 +274,7 @@ abstract public class AbstractDataMapper implements DataMapper {
         for (Method method : entityClass.getMethods()) {
             Column annotation = method.getAnnotation(Column.class);
             if (annotation != null) {
-                columns.add("  " + annotation.value().toUpperCase());
+                columns.add("  " + tableSpec.getRootTableName() + "." + annotation.value().toUpperCase());
             }
         }
         sql += String.join(",\n", columns) + "\n";

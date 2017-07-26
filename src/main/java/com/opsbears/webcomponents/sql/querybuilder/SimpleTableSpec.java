@@ -57,6 +57,15 @@ public class SimpleTableSpec implements TableSpec {
         return joinTarget;
     }
 
+    @Override
+    @Nullable
+    public String getRootTableName() {
+        if (parent != null) {
+            return parent.getRootTableName();
+        }
+        return alias == null?tableName:alias;
+    }
+
     public String toString() {
         if (parent != null) {
             return parent.toString();
