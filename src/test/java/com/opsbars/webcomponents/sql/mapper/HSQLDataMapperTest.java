@@ -73,7 +73,7 @@ public class HSQLDataMapperTest {
         try {
             mapper.insert(entity);
             fail();
-        } catch (SQLException ignored) {
+        } catch (EntityAlreadyExistsException ignored) {
             // Insert on a primary key should fail
         }
 

@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.math.BigInteger;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -397,7 +398,14 @@ abstract public class AbstractDataMapper implements DataMapper {
                 String.join(", ", placeholders) +
                 ")";
 
-        getConnection().query(query, values);
+        try {
+            getConnection().query(query, values);
+        } catch (com.opsbears.webcomponents.sql.SQLException e) {
+            if (e.getCause() instanceof SQLIntegrityConstraintViolationException) {
+                throw new EntityAlreadyExistsException(e);
+            }
+            throw e;
+        }
     }
 
     @Override
