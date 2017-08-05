@@ -408,6 +408,44 @@ abstract public class AbstractDataMapper implements DataMapper {
         }
     }
 
+    public <T> void deleteBy(Class<T> entityClass, Condition condition) {
+        deleteBy(entityClass, condition, null, null, null, null);
+    }
+    public <T> void deleteBy(Class<T> entityClass, Condition condition, @Nullable Integer limit, @Nullable Integer offset) {
+        deleteBy(entityClass, condition, null, null, limit, offset);
+    }
+
+    public <T> void deleteBy(Class<T> entityClass, Condition condition, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset) {
+        if (entityClass.getAnnotation(Table.class) == null) {
+            throw new RuntimeException("Missing @Table annotation on " + entityClass.getName());
+        }
+        Table tableAnnotation = entityClass.getAnnotation(Table.class);
+        Map<Integer,Object> sqlParameters = new HashMap<>();
+        String sql = "DELETE FROM\n";
+
+        sql += tableAnnotation.value() + "\n";
+        if (!condition.getTemplatedQuery().isEmpty()) {
+            sql += "WHERE " + condition.getTemplatedQuery() + " ";
+            int i = 0;
+            for (Object parameterValue : condition.getParameters()) {
+                sqlParameters.put(i++, parameterValue);
+            }
+        }
+        if (orderBy != null && orderDirection != null) {
+            sql += "ORDER BY " + orderBy + " " + orderDirection.toString() + " ";
+        }
+        if (limit != null) {
+            sql += "LIMIT ";
+            if (offset != null) {
+                sql += offset + ", " + limit;
+            } else {
+                sql += limit;
+            }
+        }
+        getConnection().query(sql, sqlParameters);
+    }
+
+
     @Override
     public void delete(Object entity) {
         if (entity.getClass().getAnnotation(Table.class) == null) {

@@ -34,6 +34,9 @@ public interface DataMapper {
     void insert(Object entity);
     void update(Object entity);
     void delete(Object entity);
+    <T> void deleteBy(Class<T> entityClass, Condition condition);
+    <T> void deleteBy(Class<T> entityClass, Condition condition, @Nullable Integer limit, @Nullable Integer offset);
+    <T> void deleteBy(Class<T> entityClass, Condition condition, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset);
     <T> long countBy(Class<T> entityClass, String field, Object value);
     <T> long countBy(Class<T> entityClass, Map<String, Object> parameters);
     <T> long countBy(Class<T> entityClass, Condition condition);
