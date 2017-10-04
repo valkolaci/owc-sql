@@ -1,5 +1,6 @@
 package com.opsbears.webcomponents.sql.querybuilder;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 public class Parameter extends Field {
     private final Object value;
 
-    public Parameter(Object value) {
+    public Parameter(@Nullable Object value) {
         this.value = value;
     }
 

@@ -39,7 +39,8 @@ public class ComparisonCondition extends Condition {
         LARGER_THAN(">"),
         LARGER_OR_EQUAL(">="),
         SMALLER_THAN("<"),
-        SMALLER_OR_EQUAL("<=")
+        SMALLER_OR_EQUAL("<="),
+        LIKE("LIKE")
         ;
 
         private final String value;
