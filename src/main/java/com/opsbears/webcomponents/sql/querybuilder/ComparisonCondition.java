@@ -40,7 +40,8 @@ public class ComparisonCondition extends Condition {
         LARGER_OR_EQUAL(">="),
         SMALLER_THAN("<"),
         SMALLER_OR_EQUAL("<="),
-        LIKE("LIKE")
+        LIKE("LIKE"),
+        IS("IS")
         ;
 
         private final String value;
