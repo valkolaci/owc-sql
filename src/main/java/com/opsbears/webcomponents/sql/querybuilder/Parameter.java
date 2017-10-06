@@ -15,11 +15,17 @@ public class Parameter extends Field {
 
     @Override
     public String getTemplatedQuery() {
+        if (value == null) {
+            return " null ";
+        }
         return " ? ";
     }
 
     @Override
     public List<Object> getParameters() {
+        if (value == null) {
+            return Collections.emptyList();
+        }
         return Collections.singletonList(value);
     }
 }
