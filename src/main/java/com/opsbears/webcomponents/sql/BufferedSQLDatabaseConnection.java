@@ -3,6 +3,8 @@ package com.opsbears.webcomponents.sql;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.transaction.Transaction;
+import javax.transaction.xa.XAResource;
+import java.sql.SQLException;
 import java.util.Map;
 
 @ParametersAreNonnullByDefault
