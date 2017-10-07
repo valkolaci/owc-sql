@@ -6,6 +6,7 @@ import com.opsbears.webcomponents.sql.MySQLConnectionFactory;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.transaction.Transaction;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,6 +32,10 @@ public class MySQLDataMapper extends AbstractDataMapper {
     }
 
     public void store(Object entity) {
+        store(null, entity);
+    }
+
+    public void store(@Nullable Transaction transaction, Object entity) {
         if (entity.getClass().getAnnotation(Table.class) == null) {
             throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
         }

@@ -16,6 +16,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile 'mysql:mysql-connector-java:6.0.6'
     testCompile 'org.hsqldb:hsqldb:2.4.0'
+    testCompile 'org.codehaus.btm:btm:2.1.4'
 }
 
 tasks.withType(JavaCompile) {

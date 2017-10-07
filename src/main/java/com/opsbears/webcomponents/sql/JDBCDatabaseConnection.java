@@ -2,6 +2,9 @@ package com.opsbears.webcomponents.sql;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.sql.XAConnection;
+import javax.transaction.*;
+import javax.transaction.xa.XAResource;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.SQLException;
@@ -15,9 +18,30 @@ import java.util.Date;
 @ParametersAreNonnullByDefault
 abstract public class JDBCDatabaseConnection implements BufferedUnbufferedDatabaseConnection {
     protected Connection connection;
-    private boolean transactionStarted = false;
+    protected XAConnection xaConnection = null;
 
-    private PreparedStatement execute(String query, Map<Integer, Object> parameters, boolean unbuffered) throws SQLException {
+    @Nullable
+    public XAResource getXAResource() throws SQLException {
+        return xaConnection == null?null:xaConnection.getXAResource();
+    }
+
+    private PreparedStatement execute(
+        @Nullable Transaction transaction,
+        String query,
+        Map<Integer, Object> parameters,
+        boolean unbuffered
+    ) throws SQLException {
+        if (xaConnection == null && transaction != null) {
+            throw new MissingTransactionSupportException();
+        }
+        if (xaConnection != null && transaction != null) {
+            try {
+                transaction.enlistResource(xaConnection.getXAResource());
+            } catch (RollbackException | SystemException e) {
+                throw new SQLException(e);
+            }
+        }
+
         PreparedStatement stmt;
         if (unbuffered) {
             stmt = connection.prepareStatement(query);
@@ -57,19 +81,36 @@ abstract public class JDBCDatabaseConnection implements BufferedUnbufferedDataba
 
     @Override
     public BufferedSQLResultTable query(String query, Object... parameters) {
+        return query(null, query, parameters);
+    }
+
+    @Override
+    public BufferedSQLResultTable query(@Nullable Transaction transaction, String query, Object... parameters) {
         Map<Integer,Object> newParameters = new HashMap<>();
         int i = 0;
         for (Object parameter : parameters) {
             newParameters.put(i++, parameter);
         }
-        return query(query, newParameters);
+        return query(transaction, query, newParameters);
+    }
+
+        @Override
+    public BufferedSQLResultTable query(
+        String query,
+        Map<Integer, Object> parameters
+    ) {
+        return query(null, query, parameters);
     }
 
     @Override
-    public BufferedSQLResultTable query(String query, Map<Integer, Object> parameters) {
+    public BufferedSQLResultTable query(
+        @Nullable Transaction transaction,
+        String query,
+        Map<Integer, Object> parameters
+    ) {
         try {
             @Nullable
-            ResultSet resultSet = execute(query, parameters, false).getResultSet();
+            ResultSet resultSet = execute(transaction, query, parameters, false).getResultSet();
             if (resultSet == null) {
                 return new BufferedResultTable(new ArrayList<>(), new HashMap<>());
             }
@@ -112,18 +153,32 @@ abstract public class JDBCDatabaseConnection implements BufferedUnbufferedDataba
 
     @Override
     public UnbufferedSQLResultTable queryUnbuffered(String query, Object... parameters) {
+        return queryUnbuffered(null, query, parameters);
+    }
+
+    @Override
+    public UnbufferedSQLResultTable queryUnbuffered(@Nullable Transaction transaction, String query, Object... parameters) {
         Map<Integer,Object> newParameters = new HashMap<>();
         int i = 0;
         for (Object parameter : parameters) {
             newParameters.put(i++, parameter);
         }
-        return queryUnbuffered(query, newParameters);
+        return queryUnbuffered(transaction, query, newParameters);
     }
 
     @Override
     public UnbufferedSQLResultTable queryUnbuffered(String query, Map<Integer, Object> parameters) {
+        return queryUnbuffered(null, query, parameters);
+    }
+
+    @Override
+    public UnbufferedSQLResultTable queryUnbuffered(
+        @Nullable Transaction transaction,
+        String query,
+        Map<Integer, Object> parameters
+    ) {
         try {
-            ResultSet resultSet = execute(query, parameters, true).getResultSet();
+            ResultSet resultSet = execute(transaction, query, parameters, true).getResultSet();
             if (resultSet == null) {
                 return new JDBCMySQLUnbufferedResultTable(new HashMap<>(), null);
             }

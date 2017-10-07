@@ -8,6 +8,7 @@ import com.opsbears.webcomponents.sql.querybuilder.TableSpec;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.transaction.Transaction;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -35,6 +36,11 @@ public class HSQLDataMapper extends AbstractDataMapper {
 
     @Override
     public void store(Object entity) {
+        store(null, entity);
+    }
+
+    @Override
+    public void store(@Nullable Transaction transaction, Object entity) {
         if (entity.getClass().getAnnotation(Table.class) == null) {
             throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
         }
@@ -83,6 +89,6 @@ public class HSQLDataMapper extends AbstractDataMapper {
                 "WHEN NOT MATCHED THEN INSERT (" + String.join(", ", columns) + ") VALUES (" + String.join(", ", columns.stream().map(e -> "I." + e).collect(Collectors.toList())) + ")\n" +
                 "WHEN MATCHED THEN UPDATE SET " + String.join(", ", columns.stream().map(e -> "T." + e + "=I." + e).collect(Collectors.toList())) + "\n";
 
-        factory.getConnection().query(query, values);
+        factory.getConnection().query(transaction, query, values);
     }
 }

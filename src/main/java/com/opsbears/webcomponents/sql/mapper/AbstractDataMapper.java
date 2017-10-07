@@ -6,6 +6,7 @@ import com.opsbears.webcomponents.sql.querybuilder.*;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.transaction.Transaction;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,6 +37,22 @@ abstract public class AbstractDataMapper implements DataMapper {
      * @return
      */
     public <T> T loadOneByQuery(Class<T> entityClass, String query, Map<Integer,Object> parameters) {
+        return loadOneByQuery(null, entityClass, query, parameters);
+    }
+
+
+    /**
+     * Load one entity by specifying a SQL query. The class must have a constructor that matches the returned columns
+     * by their @Column annotations exactly.
+     *
+     * @param entityClass
+     * @param query
+     * @param parameters
+     * @param <T>
+     *
+     * @return
+     */
+    public <T> T loadOneByQuery(@Nullable Transaction transaction, Class<T> entityClass, String query, Map<Integer,Object> parameters) {
         List<T> result = loadByQuery(entityClass, query, parameters);
         if (result.size() == 0) {
             throw new EntityNotFoundException();
@@ -55,6 +72,21 @@ abstract public class AbstractDataMapper implements DataMapper {
      * @return
      */
     public <T> T loadOneByQuery(Class<T> entityClass, String query, Object... parameters) {
+        return loadOneByQuery(entityClass, query, parameters);
+    }
+
+    /**
+     * Load one entity by specifying a SQL query. The class must have a constructor that matches the returned columns
+     * by their @Column annotations exactly.
+     *
+     * @param entityClass
+     * @param query
+     * @param parameters
+     * @param <T>
+     *
+     * @return
+     */
+    public <T> T loadOneByQuery(@Nullable Transaction transaction, Class<T> entityClass, String query, Object... parameters) {
         List<T> result = loadByQuery(entityClass, query, parameters);
         if (result.size() == 0) {
             throw new EntityNotFoundException();
@@ -64,6 +96,11 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public <T> T loadOneBy(Class<T> entityClass, String field, Object value) {
+        return loadOneBy(null, entityClass, field, value);
+    }
+
+    @Override
+    public <T> T loadOneBy(@Nullable Transaction transaction, Class<T> entityClass, String field, Object value) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put(field, value);
         return loadOneBy(entityClass, parameters);
@@ -71,6 +108,11 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public <T> T loadOneBy(Class<T> entityClass, Map<String, Object> parameters) {
+        return loadOneBy(null, entityClass, parameters);
+    }
+
+    @Override
+    public <T> T loadOneBy(@Nullable Transaction transaction, Class<T> entityClass, Map<String, Object> parameters) {
         List<T> result = loadBy(entityClass, parameters, 1, null);
         if (result.size() == 0) {
             throw new EntityNotFoundException();
@@ -90,6 +132,21 @@ abstract public class AbstractDataMapper implements DataMapper {
      * @return
      */
     public <T> List<T> loadByQuery(Class<T> entityClass, String query, Object... parameters) {
+        return loadByQuery(null, entityClass, query, parameters);
+    }
+
+    /**
+     * Load a list of entity classes by specifying a SQL query. The class must have a constructor that matches the
+     * returned columns by their @Column annotation exactly.
+     *
+     * @param entityClass
+     * @param query
+     * @param parameters
+     * @param <T>
+     *
+     * @return
+     */
+    public <T> List<T> loadByQuery(@Nullable Transaction transaction, Class<T> entityClass, String query, Object... parameters) {
         Map<Integer,Object> newParameters = new HashMap<>();
         int i = 0;
         for (Object parameter : parameters) {
@@ -110,7 +167,22 @@ abstract public class AbstractDataMapper implements DataMapper {
      * @return
      */
     public <T> List<T> loadByQuery(Class<T> entityClass, String query, Map<Integer,Object> parameters) {
-        BufferedSQLResultTable result = getConnection().query(query, parameters);
+        return loadByQuery(null, entityClass, query, parameters);
+    }
+
+    /**
+     * Load a list of entity classes by specifying a SQL query. The class must have a constructor that matches the
+     * returned columns by their @Column annotation exactly.
+     *
+     * @param entityClass
+     * @param query
+     * @param parameters
+     * @param <T>
+     *
+     * @return
+     */
+    public <T> List<T> loadByQuery(@Nullable Transaction transaction, Class<T> entityClass, String query, Map<Integer,Object> parameters) {
+        BufferedSQLResultTable result = getConnection().query(transaction, query, parameters);
 
         if (result.size() == 0) {
             return new ArrayList<>();
@@ -194,21 +266,33 @@ abstract public class AbstractDataMapper implements DataMapper {
         }
         return resultList;
     }
-
     @Override
     public <T> List<T> loadAll(Class<T> entityClass) {
-        return loadBy(entityClass, new HashMap<>());
+        return loadAll(null, entityClass);
     }
 
     @Override
+    public <T> List<T> loadAll(@Nullable Transaction transaction, Class<T> entityClass) {
+        return loadBy(entityClass, new HashMap<>());
+    }
+    @Override
     public <T> List<T> loadBy(Class<T> entityClass, String field, Object value) {
+        return loadBy(null, entityClass, field, value);
+    }
+
+    @Override
+    public <T> List<T> loadBy(@Nullable Transaction transaction, Class<T> entityClass, String field, Object value) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put(field, value);
         return loadBy(entityClass, parameters);
     }
-
     @Override
     public <T> List<T> loadBy(Class<T> entityClass, String field, Object value, @Nullable Integer limit, @Nullable Integer offset) {
+        return loadBy(null, entityClass, field, value, limit, offset);
+    }
+
+    @Override
+    public <T> List<T> loadBy(@Nullable Transaction transaction, Class<T> entityClass, String field, Object value, @Nullable Integer limit, @Nullable Integer offset) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put(field, value);
         return loadBy(entityClass, parameters, limit, offset);
@@ -216,13 +300,20 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public <T> List<T> loadBy(Class<T> entityClass, String field, Object value, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset) {
+        return loadBy(null, entityClass, field, value, orderBy, orderDirection, limit, offset);
+    }
+    @Override
+    public <T> List<T> loadBy(@Nullable Transaction transaction, Class<T> entityClass, String field, Object value, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put(field, value);
         return loadBy(entityClass, parameters, orderBy, orderDirection, limit, offset);
     }
-
     @Override
     public <T> List<T> loadBy(Class<T> entityClass, Map<String, Object> parameters) {
+        return loadBy(null, entityClass, parameters);
+    }
+    @Override
+    public <T> List<T> loadBy(@Nullable Transaction transaction, Class<T> entityClass, Map<String, Object> parameters) {
         return loadBy(entityClass, parameters, null, null);
     }
 
@@ -233,11 +324,43 @@ abstract public class AbstractDataMapper implements DataMapper {
         @Nullable Integer limit,
         @Nullable Integer offset
     ) {
+        return loadBy(null, entityClass, parameters, limit, offset);
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        @Nullable Transaction transaction,
+        Class<T> entityClass,
+        Map<String, Object> parameters,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
         return loadBy(entityClass, parameters, null, null, limit, offset);
     }
 
     @Override
     public <T> List<T> loadBy(
+        Class<T> entityClass,
+        Condition condition,
+        @Nullable String orderBy,
+        @Nullable OrderDirection orderDirection,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        return loadBy(
+            null,
+            entityClass,
+            condition,
+            orderBy,
+            orderDirection,
+            limit,
+            offset
+        );
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        @Nullable Transaction transaction,
         Class<T> entityClass,
         Condition condition,
         @Nullable String orderBy,
@@ -261,6 +384,20 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public <T> List<T> loadBy(
+        Class<T> entityClass,
+        TableSpec tableSpec,
+        Condition condition,
+        @Nullable String orderBy,
+        @Nullable OrderDirection orderDirection,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        return loadBy(null, entityClass, tableSpec, condition, orderBy, orderDirection, limit,offset);
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        @Nullable Transaction transaction,
         Class<T> entityClass,
         TableSpec tableSpec,
         Condition condition,
@@ -308,6 +445,16 @@ abstract public class AbstractDataMapper implements DataMapper {
         TableSpec tableSpec,
         Condition condition
     ) {
+        return loadBy(null, entityClass, tableSpec, condition);
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        @Nullable Transaction transaction,
+        Class<T> entityClass,
+        TableSpec tableSpec,
+        Condition condition
+    ) {
         return loadBy(
             entityClass,
             tableSpec,
@@ -327,6 +474,18 @@ abstract public class AbstractDataMapper implements DataMapper {
         @Nullable Integer limit,
         @Nullable Integer offset
     ) {
+        return loadBy(null, entityClass, tableSpec, condition, limit, offset);
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        @Nullable Transaction transaction,
+        Class<T> entityClass,
+        TableSpec tableSpec,
+        Condition condition,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
         return loadBy(
             entityClass,
             tableSpec,
@@ -340,6 +499,19 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public <T> List<T> loadBy(
+        Class<T> entityClass,
+        Map<String, Object> parameters,
+        @Nullable String orderBy,
+        @Nullable OrderDirection orderDirection,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        return loadBy(null, entityClass,parameters,orderBy,orderDirection,limit,offset);
+    }
+
+    @Override
+    public <T> List<T> loadBy(
+        @Nullable Transaction transaction,
         Class<T> entityClass,
         Map<String, Object> parameters,
         @Nullable String orderBy,
@@ -367,6 +539,10 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public void insert(Object entity) {
+        insert(null, entity);
+    }
+    @Override
+    public void insert(@Nullable Transaction transaction, Object entity) {
         if (entity.getClass().getAnnotation(Table.class) == null) {
             throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
         }
@@ -409,13 +585,23 @@ abstract public class AbstractDataMapper implements DataMapper {
     }
 
     public <T> void deleteBy(Class<T> entityClass, Condition condition) {
+        deleteBy(null, entityClass, condition);
+    }
+    public <T> void deleteBy(@Nullable Transaction transaction, Class<T> entityClass, Condition condition) {
         deleteBy(entityClass, condition, null, null, null, null);
     }
     public <T> void deleteBy(Class<T> entityClass, Condition condition, @Nullable Integer limit, @Nullable Integer offset) {
+        deleteBy(null, entityClass, condition, limit, offset);
+    }
+    public <T> void deleteBy(@Nullable Transaction transaction, Class<T> entityClass, Condition condition, @Nullable Integer limit, @Nullable Integer offset) {
         deleteBy(entityClass, condition, null, null, limit, offset);
     }
 
     public <T> void deleteBy(Class<T> entityClass, Condition condition, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset) {
+        deleteBy(null, entityClass, condition, orderBy, orderDirection, limit, offset);
+    }
+
+    public <T> void deleteBy(@Nullable Transaction transaction, Class<T> entityClass, Condition condition, @Nullable String orderBy, @Nullable OrderDirection orderDirection, @Nullable Integer limit, @Nullable Integer offset) {
         if (entityClass.getAnnotation(Table.class) == null) {
             throw new RuntimeException("Missing @Table annotation on " + entityClass.getName());
         }
@@ -445,9 +631,13 @@ abstract public class AbstractDataMapper implements DataMapper {
         getConnection().query(sql, sqlParameters);
     }
 
-
     @Override
     public void delete(Object entity) {
+        delete(null, entity);
+    }
+
+    @Override
+    public void delete(@Nullable Transaction transaction, Object entity) {
         if (entity.getClass().getAnnotation(Table.class) == null) {
             throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
         }
@@ -490,6 +680,11 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public void update(Object entity) {
+        update(null, entity);
+    }
+
+    @Override
+    public void update(@Nullable Transaction transaction, Object entity) {
         if (entity.getClass().getAnnotation(Table.class) == null) {
             throw new RuntimeException("Missing @Table annotation on " + entity.getClass().getName());
         }
@@ -552,6 +747,11 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public <T> long countBy(Class<T> entityClass, String field, Object value) {
+        return countBy(null, entityClass, field, value);
+    }
+
+    @Override
+    public <T> long countBy(@Nullable Transaction transaction, Class<T> entityClass, String field, Object value) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put(field, value);
         return countBy(entityClass, parameters);
@@ -559,6 +759,15 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public <T> long countBy(
+        Class<T> entityClass,
+        Map<String, Object> parameters
+    ) {
+        return countBy(null, entityClass, parameters);
+    }
+
+    @Override
+    public <T> long countBy(
+        @Nullable Transaction transaction,
         Class<T> entityClass,
         Map<String, Object> parameters
     ) {
@@ -576,8 +785,16 @@ abstract public class AbstractDataMapper implements DataMapper {
         );
     }
 
+    public <T> long countBy(
+        Class<T> entityClass,
+        Condition condition
+    ) {
+        return countBy(null, entityClass, condition);
+    }
+
     @Override
     public <T> long countBy(
+        @Nullable Transaction transaction,
         Class<T> entityClass,
         Condition condition
     ) {
@@ -585,6 +802,10 @@ abstract public class AbstractDataMapper implements DataMapper {
     }
 
     public <T> long countBy(Class<T> entityClass, TableSpec tableSpec, Condition condition) {
+        return countBy(null, entityClass, tableSpec, condition);
+    }
+
+    public <T> long countBy(@Nullable Transaction transaction, Class<T> entityClass, TableSpec tableSpec, Condition condition) {
         Map<Integer,Object> sqlParameters = new HashMap<>();
         String sql = "SELECT\n";
         sql += "COUNT(*) cnt\n";
@@ -612,9 +833,17 @@ abstract public class AbstractDataMapper implements DataMapper {
         }
     }
 
+    @Override
+    public <T> List<T> loadBy(
+        Class<T> entityClass,
+        Condition condition
+    ) {
+        return loadBy(null, entityClass, condition);
+    }
 
     @Override
     public <T> List<T> loadBy(
+        @Nullable Transaction transaction,
         Class<T> entityClass,
         Condition condition
     ) {
@@ -623,6 +852,16 @@ abstract public class AbstractDataMapper implements DataMapper {
 
     @Override
     public <T> List<T> loadBy(
+        Class<T> entityClass,
+        Condition condition,
+        @Nullable Integer limit,
+        @Nullable Integer offset
+    ) {
+        return loadBy(null, entityClass, condition, limit, offset);
+    }
+    @Override
+    public <T> List<T> loadBy(
+        @Nullable Transaction transaction,
         Class<T> entityClass,
         Condition condition,
         @Nullable Integer limit,

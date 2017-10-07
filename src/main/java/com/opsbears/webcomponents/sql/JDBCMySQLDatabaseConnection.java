@@ -1,18 +1,11 @@
 package com.opsbears.webcomponents.sql;
 
-import javax.annotation.Nullable;
+import com.mysql.cj.jdbc.ConnectionImpl;
+import com.mysql.cj.jdbc.MysqlXAConnection;
+
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.chrono.ChronoLocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalAccessor;
-import java.util.*;
-import java.util.Date;
 
 @ParametersAreNonnullByDefault
 public class JDBCMySQLDatabaseConnection extends JDBCDatabaseConnection implements MySQLDatabaseConnection {
@@ -21,6 +14,7 @@ public class JDBCMySQLDatabaseConnection extends JDBCDatabaseConnection implemen
     public JDBCMySQLDatabaseConnection(String jdbcURL, String username, String password) {
         try {
             connection = DriverManager.getConnection(jdbcURL + "&serverTimezone=GMT", username, password);
+            xaConnection = new MysqlXAConnection((ConnectionImpl)connection, false);
         } catch (SQLException e) {
             throw new JDBCMySQLConnectionException(e);
         }
