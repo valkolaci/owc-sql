@@ -1,5 +1,6 @@
 package com.opsbears.webcomponents.sql;
 
+import com.mysql.cj.core.conf.url.HostInfo;
 import com.mysql.cj.jdbc.ConnectionImpl;
 import com.mysql.cj.jdbc.MysqlXAConnection;
 
@@ -11,10 +12,18 @@ import java.sql.SQLException;
 public class JDBCMySQLDatabaseConnection extends JDBCDatabaseConnection implements MySQLDatabaseConnection {
     private boolean transactionStarted = false;
 
+    static {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     public JDBCMySQLDatabaseConnection(String jdbcURL, String username, String password) {
         try {
             connection = DriverManager.getConnection(jdbcURL + "&serverTimezone=GMT", username, password);
-            xaConnection = new MysqlXAConnection((ConnectionImpl)connection, false);
+            xaConnection = new MysqlXAConnection((ConnectionImpl)connection, true);
         } catch (SQLException e) {
             throw new JDBCMySQLConnectionException(e);
         }
