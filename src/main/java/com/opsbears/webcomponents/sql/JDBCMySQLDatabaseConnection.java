@@ -23,7 +23,11 @@ public class JDBCMySQLDatabaseConnection extends JDBCDatabaseConnection implemen
     public JDBCMySQLDatabaseConnection(String jdbcURL, String username, String password) {
         try {
             connection = DriverManager.getConnection(jdbcURL + "&serverTimezone=GMT", username, password);
-            xaConnection = new MysqlXAConnection((ConnectionImpl)connection, true);
+            try {
+                xaConnection = new MysqlXAConnection((ConnectionImpl) connection, true);
+            } catch (ClassCastException e) {
+                //No XA support, probably an old driver.
+            }
         } catch (SQLException e) {
             throw new JDBCMySQLConnectionException(e);
         }

@@ -72,7 +72,7 @@ abstract public class AbstractDataMapper implements DataMapper {
      * @return
      */
     public <T> T loadOneByQuery(Class<T> entityClass, String query, Object... parameters) {
-        return loadOneByQuery(entityClass, query, parameters);
+        return loadOneByQuery(null, entityClass, query, parameters);
     }
 
     /**
