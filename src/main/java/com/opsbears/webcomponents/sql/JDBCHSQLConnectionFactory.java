@@ -39,7 +39,7 @@ public class JDBCHSQLConnectionFactory implements HSQLConnectionFactory {
             connections.get().put(name, new JDBCHSQLDatabaseConnection(configuration.getJdbcUrl(), configuration.getUsername(), configuration.getPassword()));
         }
         try {
-            connections.get().get(name).query("SELECT 1=1", new HashMap<>());
+            connections.get().get(name).query("SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS", new HashMap<>());
         } catch (MySQLException e) {
             connectionCreated = true;
             for (Consumer<HSQLDatabaseConnection> callable : closedCallbacks) {
