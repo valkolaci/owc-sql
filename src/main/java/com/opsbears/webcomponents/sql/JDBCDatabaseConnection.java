@@ -5,6 +5,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.sql.XAConnection;
 import javax.transaction.*;
 import javax.transaction.xa.XAResource;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -82,6 +83,10 @@ abstract public class JDBCDatabaseConnection implements BufferedUnbufferedDataba
                 stmt.setByte(columnIndex, (byte) entry.getValue());
             } else if (entry.getValue().getClass().equals(byte[].class)) {
                 stmt.setBytes(columnIndex, (byte[]) entry.getValue());
+            } else if (entry.getValue() instanceof InputStream) {
+                stmt.setBlob(columnIndex, (InputStream) entry.getValue());
+            } else if (entry.getValue() instanceof Blob) {
+                stmt.setBlob(columnIndex, (Blob) entry.getValue());
             } else {
                 stmt.setString(columnIndex, entry.getValue().toString());
             }
