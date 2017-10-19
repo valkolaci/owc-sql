@@ -252,10 +252,18 @@ abstract public class AbstractDataMapper implements DataMapper {
                                 throw new RuntimeException(e);
                             }
                         } else if (parameter.getType().equals(byte[].class)) {
+                            //todo make this nicer
+                            Blob blob = ((Blob)value);
                             try {
-                                value = ((Blob)value).getBytes(0, Long.valueOf(((Blob)value).length()).intValue());
+                                try {
+                                    value = blob.getBytes(1, Long.valueOf(blob.length()).intValue());
+                                } catch (SQLException e) {
+                                    throw new RuntimeException();
+                                } finally {
+                                    blob.free();
+                                }
                             } catch (SQLException e) {
-                                throw new RuntimeException();
+                                throw new RuntimeException(e);
                             }
                         }
                     }
