@@ -6,6 +6,7 @@ import javax.sql.XAConnection;
 import javax.transaction.*;
 import javax.transaction.xa.XAResource;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -55,8 +56,12 @@ abstract public class JDBCDatabaseConnection implements BufferedUnbufferedDataba
                 stmt.setNull(columnIndex, Types.NULL);
             } else if (entry.getValue() instanceof Integer) {
                 stmt.setInt(columnIndex, (Integer) entry.getValue());
+            } else if (entry.getValue().getClass().equals(int.class)) {
+                stmt.setInt(columnIndex, (int) entry.getValue());
             } else if (entry.getValue() instanceof Float) {
                 stmt.setFloat(columnIndex, (Float) entry.getValue());
+            } else if (entry.getValue().getClass().equals(float.class)) {
+                stmt.setFloat(columnIndex, (float) entry.getValue());
             } else if (entry.getValue() instanceof Timestamp) {
                 stmt.setTimestamp(columnIndex, (Timestamp) entry);
             } else if (entry.getValue() instanceof Date) {
@@ -67,10 +72,16 @@ abstract public class JDBCDatabaseConnection implements BufferedUnbufferedDataba
                 stmt.setString(columnIndex, (String) entry.getValue());
             } else if (entry.getValue() instanceof Boolean) {
                 stmt.setBoolean(columnIndex, (Boolean) entry.getValue());
+            } else if (entry.getValue().getClass().equals(boolean.class)) {
+                stmt.setBoolean(columnIndex, (boolean) entry.getValue());
             } else if (entry.getValue() instanceof BigDecimal) {
                 stmt.setBigDecimal(columnIndex, (BigDecimal) entry.getValue());
             } else if (entry.getValue() instanceof UUID) {
                 stmt.setString(columnIndex, entry.getValue().toString());
+            } else if (entry.getValue().getClass().equals(byte.class)) {
+                stmt.setByte(columnIndex, (byte) entry.getValue());
+            } else if (entry.getValue().getClass().equals(byte[].class)) {
+                stmt.setBytes(columnIndex, (byte[]) entry.getValue());
             } else {
                 stmt.setString(columnIndex, entry.getValue().toString());
             }
