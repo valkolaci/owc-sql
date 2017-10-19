@@ -3,15 +3,19 @@ package com.opsbears.webcomponents.sql.mapper;
 import com.opsbears.webcomponents.sql.BufferedSQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
 import com.opsbears.webcomponents.sql.querybuilder.*;
+import org.hsqldb.jdbc.JDBCBlobClient;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.transaction.Transaction;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.math.BigInteger;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -231,6 +235,7 @@ abstract public class AbstractDataMapper implements DataMapper {
                 Parameter parameter = validConstructor.getParameters()[j++];
 
                 if (value != null) {
+                    //todo rework this using the parameter converter
                     if (value instanceof Timestamp && parameter.getType().equals(Date.class)) {
                         value = new Date(((Timestamp) value).getTime());
                     } else if (value instanceof Timestamp && parameter.getType().equals(LocalDateTime.class)) {
@@ -239,6 +244,20 @@ abstract public class AbstractDataMapper implements DataMapper {
                         value = UUID.fromString((String) value);
                     } else if (value instanceof Long && parameter.getType().equals(Integer.class)) {
                         value = ((Long) value).intValue();
+                    } else if (value instanceof Blob) {
+                        if (parameter.getType().isAssignableFrom(InputStream.class)) {
+                            try {
+                                value = ((Blob)value).getBinaryStream();
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
+                            }
+                        } else if (parameter.getType().equals(byte[].class)) {
+                            try {
+                                value = ((Blob)value).getBytes(0, Long.valueOf(((Blob)value).length()).intValue());
+                            } catch (SQLException e) {
+                                throw new RuntimeException();
+                            }
+                        }
                     }
                     if (parameter.getType().isEnum()) {
                         //noinspection unchecked,ConstantConditions

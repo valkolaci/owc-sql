@@ -84,7 +84,7 @@ abstract public class JDBCDatabaseConnection implements BufferedUnbufferedDataba
             } else if (entry.getValue().getClass().equals(byte[].class)) {
                 stmt.setBytes(columnIndex, (byte[]) entry.getValue());
             } else if (entry.getValue() instanceof InputStream) {
-                stmt.setBlob(columnIndex, (InputStream) entry.getValue());
+                stmt.setBinaryStream(columnIndex, (InputStream) entry.getValue());
             } else if (entry.getValue() instanceof Blob) {
                 stmt.setBlob(columnIndex, (Blob) entry.getValue());
             } else {
