@@ -548,11 +548,19 @@ abstract public class AbstractDataMapper implements DataMapper {
     ) {
         List<Condition> conditions = new ArrayList<>();
         for (Map.Entry<String, Object> parameter : parameters.entrySet()) {
-            conditions.add(new ComparisonCondition(
-                new FieldName(parameter.getKey()),
-                ComparisonCondition.Operator.EQUALS,
-                new com.opsbears.webcomponents.sql.querybuilder.Parameter(parameter.getValue())
-            ));
+            if (parameter.getValue() == null) {
+                conditions.add(new ComparisonCondition(
+                    new FieldName(parameter.getKey()),
+                    ComparisonCondition.Operator.IS,
+                    new com.opsbears.webcomponents.sql.querybuilder.Parameter(null)
+                ));
+            } else {
+                conditions.add(new ComparisonCondition(
+                    new FieldName(parameter.getKey()),
+                    ComparisonCondition.Operator.EQUALS,
+                    new com.opsbears.webcomponents.sql.querybuilder.Parameter(parameter.getValue())
+                ));
+            }
         }
         return loadBy(
             entityClass,
