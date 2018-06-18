@@ -110,7 +110,7 @@ abstract public class JDBCDatabaseConnection implements BufferedUnbufferedDataba
         return query(transaction, query, newParameters);
     }
 
-        @Override
+    @Override
     public BufferedSQLResultTable query(
         String query,
         Map<Integer, Object> parameters

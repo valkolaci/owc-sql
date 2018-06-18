@@ -49,7 +49,7 @@ public class MySQLDataMapper extends AbstractDataMapper {
             Column annotation = method.getAnnotation(Column.class);
             if (annotation != null) {
                 try {
-                    columns.add(annotation.value());
+                    columns.add("`" + annotation.value() + "`");
                     values.put(i++, method.invoke(entity));
                     placeholders.add("?");
                 } catch (IllegalAccessException | InvocationTargetException e) {
