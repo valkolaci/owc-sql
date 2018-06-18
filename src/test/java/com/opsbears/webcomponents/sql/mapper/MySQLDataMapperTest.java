@@ -3,17 +3,12 @@ package com.opsbears.webcomponents.sql.mapper;
 import com.opsbears.webcomponents.sql.JDBCMySQLConnectionConfiguration;
 import com.opsbears.webcomponents.sql.JDBCMySQLConnectionFactory;
 import com.opsbears.webcomponents.sql.MySQLDatabaseConnection;
-import com.opsbears.webcomponents.sql.SQLException;
-import com.opsbears.webcomponents.sql.mapper.DataMapper;
-import com.opsbears.webcomponents.sql.mapper.MySQLDataMapper;
 import org.junit.Test;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.TemporalField;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -3,9 +3,6 @@ package com.opsbears.webcomponents.sql.mapper;
 import com.opsbears.webcomponents.sql.JDBCHSQLConnectionConfiguration;
 import com.opsbears.webcomponents.sql.JDBCHSQLConnectionFactory;
 import com.opsbears.webcomponents.sql.HSQLDatabaseConnection;
-import com.opsbears.webcomponents.sql.SQLException;
-import com.opsbears.webcomponents.sql.mapper.DataMapper;
-import com.opsbears.webcomponents.sql.mapper.HSQLDataMapper;
 import org.junit.Test;
 
 import javax.annotation.ParametersAreNonnullByDefault;

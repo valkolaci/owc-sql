@@ -24,6 +24,7 @@ import java.util.*;
 @ParametersAreNonnullByDefault
 abstract public class AbstractDataMapper implements DataMapper {
     abstract protected BufferedSQLDatabaseConnection getConnection();
+    abstract protected String escapeColumnName(String columnName);
 
     protected String transformColumName(String columnName) {
         return columnName;
@@ -591,7 +592,7 @@ abstract public class AbstractDataMapper implements DataMapper {
             Column annotation = method.getAnnotation(Column.class);
             if (annotation != null) {
                 try {
-                    columns.add(annotation.value());
+                    columns.add(escapeColumnName(annotation.value()));
                     values.put(i++, method.invoke(entity));
                     placeholders.add("?");
                 } catch (IllegalAccessException | InvocationTargetException e) {

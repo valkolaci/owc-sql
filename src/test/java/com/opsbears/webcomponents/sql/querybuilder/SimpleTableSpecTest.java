@@ -1,4 +1,4 @@
-package com.opsbars.webcomponents.sql.querybuilder;
+package com.opsbears.webcomponents.sql.querybuilder;
 
 import com.opsbears.webcomponents.sql.querybuilder.SimpleTableSpec;
 import org.junit.Test;

@@ -1,10 +1,6 @@
 package com.opsbears.webcomponents.sql.migration;
 
 import com.opsbears.webcomponents.sql.*;
-import com.opsbears.webcomponents.sql.migration.Migration;
-import com.opsbears.webcomponents.sql.migration.MigrationProcessor;
-import com.opsbears.webcomponents.sql.migration.MySQLMigrationFactory;
-import com.opsbears.webcomponents.sql.migration.MySQLMigrationProcessor;
 import org.junit.Test;
 
 import javax.annotation.ParametersAreNonnullByDefault;

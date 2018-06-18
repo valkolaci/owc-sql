@@ -27,6 +27,11 @@ public class MySQLDataMapper extends AbstractDataMapper {
         return factory.getConnection();
     }
 
+    @Override
+    protected String escapeColumnName(String columnName) {
+        return "`" + columnName + "`";
+    }
+
     protected String transformColumName(String columnName) {
         return columnName;
     }
@@ -34,6 +39,8 @@ public class MySQLDataMapper extends AbstractDataMapper {
     public void store(Object entity) {
         store(null, entity);
     }
+
+
 
     public void store(@Nullable Transaction transaction, Object entity) {
         if (entity.getClass().getAnnotation(Table.class) == null) {

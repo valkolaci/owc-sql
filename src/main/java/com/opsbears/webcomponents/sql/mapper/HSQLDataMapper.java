@@ -30,6 +30,11 @@ public class HSQLDataMapper extends AbstractDataMapper {
         return factory.getConnection();
     }
 
+    @Override
+    protected String escapeColumnName(String columnName) {
+        return "\"" + columnName + "\"";
+    }
+
     protected String transformColumName(String columnName) {
         return columnName.toUpperCase();
     }

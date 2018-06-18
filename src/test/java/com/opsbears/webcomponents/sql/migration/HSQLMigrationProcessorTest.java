@@ -4,7 +4,6 @@ import com.opsbears.webcomponents.sql.JDBCHSQLConnectionConfiguration;
 import com.opsbears.webcomponents.sql.JDBCHSQLConnectionFactory;
 import com.opsbears.webcomponents.sql.HSQLConnectionFactory;
 import com.opsbears.webcomponents.sql.HSQLDatabaseConnection;
-import com.opsbears.webcomponents.sql.migration.*;
 import org.junit.Test;
 
 import javax.annotation.ParametersAreNonnullByDefault;
