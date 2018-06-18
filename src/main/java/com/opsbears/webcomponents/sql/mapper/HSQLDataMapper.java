@@ -32,7 +32,7 @@ public class HSQLDataMapper extends AbstractDataMapper {
 
     @Override
     protected String escapeColumnName(String columnName) {
-        return "\"" + columnName + "\"";
+        return columnName;
     }
 
     protected String transformColumName(String columnName) {
