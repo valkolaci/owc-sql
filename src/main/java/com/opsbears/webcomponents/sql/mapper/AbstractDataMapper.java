@@ -778,7 +778,14 @@ abstract public class AbstractDataMapper implements DataMapper {
                 " SET " + String.join(", ", updatePlaceholder) +
                 " WHERE " + String.join(" AND ", wherePlaceholder);
 
-        getConnection().query(query, values);
+        try {
+            getConnection().query(query, values);
+        } catch (com.opsbears.webcomponents.sql.SQLException e) {
+            if (e.getCause() instanceof SQLIntegrityConstraintViolationException) {
+                throw new EntityAlreadyExistsException(e);
+            }
+            throw e;
+        }
     }
 
     @Override
