@@ -14,10 +14,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.math.BigInteger;
+import java.security.InvalidParameterException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -241,6 +244,8 @@ abstract public class AbstractDataMapper implements DataMapper {
                         value = new Date(((Timestamp) value).getTime());
                     } else if (value instanceof Timestamp && parameter.getType().equals(LocalDateTime.class)) {
                         value = ((Timestamp) value).toLocalDateTime();
+                    } else if (value instanceof Timestamp && parameter.getType().equals(LocalDate.class)) {
+                        value = ((Timestamp) value).toLocalDateTime().toLocalDate();
                     } else if (value instanceof String && parameter.getType().equals(UUID.class)) {
                         value = UUID.fromString((String) value);
                     } else if (value instanceof Long && parameter.getType().equals(Integer.class)) {
@@ -463,6 +468,8 @@ abstract public class AbstractDataMapper implements DataMapper {
             } else {
                 sql += limit;
             }
+        } else if (offset != null) {
+            throw new InvalidParameterException("OFFSET specified without LIMIT!");
         }
         return loadByQuery(entityClass, sql, sqlParameters);
     }

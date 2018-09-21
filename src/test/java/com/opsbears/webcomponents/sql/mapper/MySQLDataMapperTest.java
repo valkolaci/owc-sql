@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -62,6 +63,41 @@ public class MySQLDataMapperTest {
         assertEquals("Test", loadedEntity.getTextField());
         assertEquals(
             Instant.ofEpochMilli(1489943447000L).atZone(ZoneId.systemDefault()).toLocalDateTime(),
+            loadedEntity.getDateField()
+        );
+        assertEquals(1.2, loadedEntity.getFloatField());
+        assertEquals(true, loadedEntity.getBoolField().booleanValue());
+
+
+        try {
+            mapper.insert(entity);
+            fail();
+        } catch (EntityAlreadyExistsException ignored) {
+            // Insert on a primary key should fail
+        }
+
+        mapper.update(entity);
+    }
+
+
+    @Test
+    public void testSimpleStoreLoad2() {
+        DataMapper mapper = getMapper();
+        LocalDate date = Instant.ofEpochMilli(1489943447000L).atZone(ZoneId.systemDefault()).toLocalDate();
+        TestEntity2 entity = new TestEntity2(
+            1,
+            "Test",
+            date,
+            1.2,
+            true
+        );
+        mapper.store(entity);
+        TestEntity2 loadedEntity = mapper.loadOneBy(TestEntity2.class, "id", 1);
+
+        assertEquals(1, loadedEntity.getIdField().intValue());
+        assertEquals("Test", loadedEntity.getTextField());
+        assertEquals(
+            Instant.ofEpochMilli(1489943447000L).atZone(ZoneId.systemDefault()).toLocalDate(),
             loadedEntity.getDateField()
         );
         assertEquals(1.2, loadedEntity.getFloatField());
