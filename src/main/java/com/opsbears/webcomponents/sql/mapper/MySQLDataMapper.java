@@ -1,25 +1,27 @@
 package com.opsbears.webcomponents.sql.mapper;
 
 import com.opsbears.webcomponents.sql.BufferedSQLDatabaseConnection;
-import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
 import com.opsbears.webcomponents.sql.MySQLConnectionFactory;
+import com.opsbears.webcomponents.typeconverter.TypeConverterChain;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.transaction.Transaction;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @ParametersAreNonnullByDefault
 public class MySQLDataMapper extends AbstractDataMapper {
     private MySQLConnectionFactory factory;
 
+    public MySQLDataMapper(MySQLConnectionFactory factory, TypeConverterChain typeConverterChain) {
+        super(typeConverterChain);
+        this.factory = factory;
+    }
+
     public MySQLDataMapper(MySQLConnectionFactory factory) {
+        super();
         this.factory = factory;
     }
 

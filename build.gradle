@@ -8,9 +8,13 @@ targetCompatibility = 1.8
 
 repositories {
     jcenter()
+    maven { url 'https://jitpack.io' }
+    maven { url "https://clojars.org/repo" }
 }
 
 dependencies {
+    compile group: 'com.opsbears.webcomponents', name: 'typeconverter', version: '1.0.0-alpha11'
+    compile group: 'com.opsbears.webcomponents.typeconverter', name: 'builtin', version: '1.0.0-alpha11'
     compile group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     compile 'javax.transaction:javax.transaction-api:1.2'
     compile 'mysql:mysql-connector-java:6.0.6'

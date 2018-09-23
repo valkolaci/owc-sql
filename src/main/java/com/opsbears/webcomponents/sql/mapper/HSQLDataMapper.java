@@ -1,20 +1,14 @@
 package com.opsbears.webcomponents.sql.mapper;
 
 import com.opsbears.webcomponents.sql.BufferedSQLDatabaseConnection;
-import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
 import com.opsbears.webcomponents.sql.HSQLConnectionFactory;
-import com.opsbears.webcomponents.sql.querybuilder.Condition;
-import com.opsbears.webcomponents.sql.querybuilder.TableSpec;
+import com.opsbears.webcomponents.typeconverter.TypeConverterChain;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.transaction.Transaction;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,7 +16,13 @@ import java.util.stream.Collectors;
 public class HSQLDataMapper extends AbstractDataMapper {
     private HSQLConnectionFactory factory;
 
+    public HSQLDataMapper(HSQLConnectionFactory factory, TypeConverterChain typeConverterChain) {
+        super(typeConverterChain);
+        this.factory = factory;
+    }
+
     public HSQLDataMapper(HSQLConnectionFactory factory) {
+        super();
         this.factory = factory;
     }
 

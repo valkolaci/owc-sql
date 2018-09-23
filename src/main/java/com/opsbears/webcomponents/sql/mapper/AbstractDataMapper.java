@@ -3,7 +3,9 @@ package com.opsbears.webcomponents.sql.mapper;
 import com.opsbears.webcomponents.sql.BufferedSQLDatabaseConnection;
 import com.opsbears.webcomponents.sql.BufferedSQLResultTable;
 import com.opsbears.webcomponents.sql.querybuilder.*;
-import org.hsqldb.jdbc.JDBCBlobClient;
+import com.opsbears.webcomponents.typeconverter.SingleTypeConverter;
+import com.opsbears.webcomponents.typeconverter.TypeConverterChain;
+import com.opsbears.webcomponents.typeconverter.builtin.DefaultTypeConverterChain;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -18,11 +20,23 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @ParametersAreNonnullByDefault
 abstract public class AbstractDataMapper implements DataMapper {
+    private final TypeConverterChain typeConverter;
+
+    protected AbstractDataMapper() {
+        this(DefaultTypeConverterChain.defaultChain(ZoneOffset.UTC));
+    }
+
+    protected AbstractDataMapper(TypeConverterChain typeConverter) {
+        this.typeConverter = typeConverter;
+    }
+
     abstract protected BufferedSQLDatabaseConnection getConnection();
 
     protected String transformColumName(String columnName) {
@@ -235,51 +249,7 @@ abstract public class AbstractDataMapper implements DataMapper {
                 Parameter parameter = validConstructor.getParameters()[j++];
 
                 if (value != null) {
-                    //todo rework this using the parameter converter
-                    if (value instanceof Timestamp && parameter.getType().equals(Date.class)) {
-                        value = new Date(((Timestamp) value).getTime());
-                    } else if (value instanceof Timestamp && parameter.getType().equals(LocalDateTime.class)) {
-                        value = ((Timestamp) value).toLocalDateTime();
-                    } else if (value instanceof String && parameter.getType().equals(UUID.class)) {
-                        value = UUID.fromString((String) value);
-                    } else if (value instanceof Long && parameter.getType().equals(Integer.class)) {
-                        value = ((Long) value).intValue();
-                    } else if (value instanceof Blob) {
-                        if (parameter.getType().isAssignableFrom(InputStream.class)) {
-                            try {
-                                value = ((Blob)value).getBinaryStream();
-                            } catch (SQLException e) {
-                                throw new RuntimeException(e);
-                            }
-                        } else if (parameter.getType().equals(byte[].class)) {
-                            //todo make this nicer
-                            Blob blob = ((Blob)value);
-                            try {
-                                try {
-                                    value = blob.getBytes(1, Long.valueOf(blob.length()).intValue());
-                                } catch (SQLException e) {
-                                    throw new RuntimeException();
-                                } finally {
-                                    blob.free();
-                                }
-                            } catch (SQLException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    }
-                    if (parameter.getType().isEnum()) {
-                        //noinspection unchecked,ConstantConditions
-                        try {
-                            Enum[] values = (Enum[]) parameter.getType().getMethod("values").invoke(null);
-                            for (Enum enumValue : values) {
-                                if (enumValue.toString().equals(value)) {
-                                    value = enumValue;
-                                }
-                            }
-                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+                    value = this.typeConverter.convert(value, parameter.getType());
                 }
 
                 constructorParameters.add(constructorParameterIterator++, value);

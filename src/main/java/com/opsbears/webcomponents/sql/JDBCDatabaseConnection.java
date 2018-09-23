@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.sql.*;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.chrono.ChronoLocalDate;
 import java.time.format.DateTimeFormatter;
@@ -66,7 +67,9 @@ abstract public class JDBCDatabaseConnection implements BufferedUnbufferedDataba
             } else if (entry.getValue() instanceof Timestamp) {
                 stmt.setTimestamp(columnIndex, (Timestamp) entry);
             } else if (entry.getValue() instanceof Date) {
-                stmt.setTimestamp(columnIndex, new java.sql.Timestamp(((Date)entry.getValue()).getTime()));
+                stmt.setDate(columnIndex, new java.sql.Date(((Date)entry.getValue()).getTime()));
+            } else if (entry.getValue() instanceof LocalDate) {
+                stmt.setDate(columnIndex, new java.sql.Date(Timestamp.valueOf(((LocalDate)entry.getValue()).atStartOfDay()).getTime()));
             } else if (entry.getValue() instanceof LocalDateTime) {
                 stmt.setTimestamp(columnIndex, Timestamp.valueOf(((LocalDateTime)entry.getValue())));
             } else if (entry.getValue() instanceof String) {
